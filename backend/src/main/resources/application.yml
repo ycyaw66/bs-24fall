@@ -13,3 +13,9 @@ spring:
             schema-locations: classpath:db/init.sql
             data-locations: classpath:db/data.sql
             mode: always
+            
+    data:
+        redis:
+            host: localhost
+            port: 6379
+            database: 1

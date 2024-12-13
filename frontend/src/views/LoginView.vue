@@ -62,8 +62,8 @@ export default {
     jumpForget() {
       this.$router.push('/user/forget');
     },
-    jumpProfile() {
-      this.$router.push('/user/profile');
+    jumpSearch() {
+      this.$router.push('/search');
     },
     handleLogin() {
       // 加密后传给后端
@@ -77,7 +77,7 @@ export default {
           if (response.data.code === 0) {
             ElMessage.success("登录成功");
             Cookies.set('token', response.data.payload.token);
-            this.jumpProfile();
+            this.jumpSearch();
           } else {
             ElMessage.error(response.data.err);
             return;
