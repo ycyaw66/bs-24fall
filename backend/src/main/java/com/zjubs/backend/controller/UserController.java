@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.zjubs.backend.controller.dto.AuthorizationBody;
 import com.zjubs.backend.controller.dto.ChangePasswordBody;
 import com.zjubs.backend.controller.dto.ChangeProfileBody;
+import com.zjubs.backend.controller.dto.ForgetBody;
 import com.zjubs.backend.controller.dto.RegisterBody;
 import com.zjubs.backend.controller.dto.SendMailBody;
 import com.zjubs.backend.controller.dto.UserLoginBody;
@@ -134,6 +135,21 @@ public class UserController {
         if (!userService.register(user)) {
             return RespResult.fail("用户名或邮箱已存在");
         }
+        return RespResult.success();
+    }
+
+    @PostMapping("/forget")
+    public RespResult forget(@Validated @RequestBody ForgetBody body) {
+        ApiResult apiResult = emailValidService.validCode(body.getUuid(), body.getEmail(), body.getCode());
+        if (!apiResult.ok) {
+            return RespResult.fail(apiResult.message);
+        }
+        User user = userService.getUserByEmail(body.getEmail());
+        if (user == null) {
+            return RespResult.fail("邮箱不存在");
+        }
+        user.setPassword(body.getPassword());
+        userService.updateProfile(user.getUsername(), user);
         return RespResult.success();
     }
 }

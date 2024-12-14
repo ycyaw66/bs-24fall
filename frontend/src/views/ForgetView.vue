@@ -99,14 +99,13 @@ export default {
       });
     },
     handleForget() {
-      // 加密后传给后端
       const encrypted = CryptoJS.SHA256(this.forgetForm.password).toString();
       axios.post("/user/forget",
           {
             "email": this.forgetForm.email,
             "uuid": this.uuid,
             "password": encrypted,
-            "verification_code": this.forgetForm.verificationCode
+            "code": this.forgetForm.verificationCode
           })
           .then(response => {
             if (response.data.code === 0) {
@@ -129,7 +128,7 @@ export default {
       this.countDown = 30;
       this.isCounting = true;
       this.doCountdown();
-      axios.post("/user/register/sendMail",
+      axios.post("/user/sendmail",
           {
             "mail": this.forgetForm.email
           })

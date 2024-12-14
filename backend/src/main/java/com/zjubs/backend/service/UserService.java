@@ -58,6 +58,10 @@ public class UserService {
         return userMapper.selectByUsername(username);
     }
 
+    public User getUserByEmail(String email) {
+        return userMapper.selectByEmail(email);
+    }
+
     public void updateProfile(String username, User user) {
         userMapper.updateProfile(username, user.getPassword(), user.getPhone(), user.getGender(), user.getAddress());
     }
