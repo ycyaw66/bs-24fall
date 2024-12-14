@@ -15,7 +15,7 @@
           class="avatar"
         />
         <div class="user-info">
-          <h2>{{ username }}</h2>
+          <h2>{{ this.username }}</h2>
           <p class="email">{{ userInfo.email }}</p>
         </div>
       </div>
@@ -37,7 +37,7 @@
     <el-dialog title="完善信息" v-model="showCompleteDialog" width="30%" align-center>
       <el-form :model="modifyForm" ref="modifyForm" label-width="80px">
         <el-form-item label="电话" prop="phone_number" style="margin-top: 20px">
-          <el-input v-model="modifyForm.phone_number" placeholder="电话" style="width: 300px"></el-input>
+          <el-input v-model="modifyForm.phone" placeholder="电话" style="width: 300px"></el-input>
         </el-form-item>
         <el-form-item label="性别" prop="gender" style="margin-top: 20px">
           <el-radio-group v-model="modifyForm.gender">
@@ -82,8 +82,11 @@
 </template>
 
 <script>
-import { ElMessage } from 'element-plus';
 import HeaderComponent from "@/components/HeaderComponent.vue";
+import CryptoJS from 'crypto-js';
+import Cookies from "js-cookie";
+import axios from 'axios';
+import { ElMessage } from 'element-plus';
 
 export default {
   components: {
@@ -98,10 +101,9 @@ export default {
       }
     };
     return {
-      username: "张三", // 示例用户名
-      isLoggedIn: false, // 登录状态
+      username: "", // 示例用户名
       userInfo: {
-        email: "user@example.com",
+        email: "",
         phone: "暂未填充",
         gender: "不愿透露",
         address: "暂未填充",
@@ -134,7 +136,7 @@ export default {
     };
   },
   mounted() {
-    this.checkLoginStatus(); // 页面加载时获取用户名
+    this.getUserInfo();
   },
   methods: {
     jumpLogin() {
@@ -145,36 +147,106 @@ export default {
     },
     submitForm() {
       // 表单校验
-      if (this.modifyInfoVisible) {
-        this.$refs["modifyForm"].validate((valid) => {
+      if (this.showPasswordDialog) {
+        this.$refs["passwordForm"].validate((valid) => {
           if (!valid) {
             ElMessage.error("修改失败，请检查修改信息");
             return;
           } else {
-            this.handleModify();
+            this.handlePassword();
           }
         });
       } else {
-        this.handleModify();
+        this.handleProfile();
       }
     },
-    checkLoginStatus() {
-      // 实际中修改为调用后端 API 检查是否已登录
-      // const user = localStorage.getItem("user"); // 从本地存储获取用户信息
-      const user = "ycyaw"; // 测试用，假设用户已登录
-      if (user) {
-        this.isLoggedIn = true;
-        this.username = user;
-        // this.username = JSON.parse(user).username; // 假设用户信息存储中有 username
-      } else {
-        this.isLoggedIn = false;
+    getUserInfo() {
+      const token = Cookies.get('token');
+      if (!token) {
+        return;
       }
+      axios.post("/user/getprofile",
+        {
+          "authorization": token
+        })
+        .then(response => {
+          if (response.data.code === 0) {
+            this.username = response.data.payload.username;
+            this.userInfo.email = response.data.payload.email;
+            this.userInfo.phone = response.data.payload.phone;
+            this.userInfo.gender = response.data.payload.gender;
+            this.userInfo.address = response.data.payload.address;
+            if (this.userInfo.phone === null) {
+              this.userInfo.phone = "暂未填充";
+            }
+            if (this.userInfo.gender === null || this.userInfo.gender == '0') {
+              this.userInfo.gender = "不愿透露";
+            }
+            if (this.userInfo.gender == '1') {
+              this.userInfo.gender = "男";
+            }
+            if (this.userInfo.gender == '2') {
+              this.userInfo.gender = "女";
+            }
+            if (this.userInfo.address === null) {
+              this.userInfo.address = "暂未填充";
+            }
+          } else {
+            ElMessage.error(response.data.err);
+            return;
+          }
+        })
     },
-    handleLogout() {
-      // 实际中修改为调用后端 API 注销登录
-      // localStorage.removeItem("user"); // 清除本地存储的用户信息
-      this.isLoggedIn = false;
-      this.jumpLogin(); // 注销后跳转到登录页
+    handlePassword() {
+      const encryptedPassword = CryptoJS.SHA256(this.passwordForm.password).toString();
+      const encryptedNewPassword = CryptoJS.SHA256(this.passwordForm.new_password).toString();
+      axios.post("/user/password",
+        {
+          "username": this.username,
+          "password": encryptedPassword,
+          "newpassword": encryptedNewPassword
+        })
+        .then(response => {
+          if (response.data.code === 0) {
+            ElMessage.success("修改密码成功");
+            this.showPasswordDialog = false;
+          } else {
+            ElMessage.error(response.data.err);
+            return;
+          }
+        })
+        .catch(error => {
+          console.log(error);
+        })
+    },
+    handleProfile() {
+      const token = Cookies.get('token');
+      console.log(this.modifyForm);
+      var postgender = "0";
+      if (this.modifyForm.gender == "男") {
+        postgender = "1";
+      }
+      if (this.modifyForm.gender == "女") {
+        postgender = "2";
+      }
+      console.log(postgender);
+      axios.post("/user/changeprofile",
+        {
+          "phone": this.modifyForm.phone,
+          "gender": postgender,
+          "address": this.modifyForm.address,
+          "authorization": token
+        })
+        .then(response => {
+          if (response.data.code === 0) {
+            ElMessage.success("修改信息成功");
+            this.showCompleteDialog = false;
+            this.getUserInfo();
+          } else {
+            ElMessage.error(response.data.err);
+            return;
+          }
+        })
     },
     openCompleteDialog() {
       this.showCompleteDialog = true;

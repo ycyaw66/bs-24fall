@@ -16,7 +16,7 @@
             <el-dropdown-menu>
               <el-dropdown-item @click="jumpProfile">个人资料</el-dropdown-item>
               <el-dropdown-item @click="jumpCollection">我的收藏</el-dropdown-item>
-              <el-dropdown-item @click="logout">退出登录</el-dropdown-item>
+              <el-dropdown-item @click="handleLogout">退出登录</el-dropdown-item>
             </el-dropdown-menu>
           </template>
         </el-dropdown>
@@ -29,10 +29,19 @@
 </template>
 
 <script>
+import Cookies from "js-cookie";
+import axios from 'axios';
+import { ElMessage } from 'element-plus';
+
 export default {
-  props: {
-    isLoggedIn: Boolean,
-    username: String,
+  data() {
+    return {
+      isLoggedIn: false,
+      username: "",
+    };
+  },
+  mounted() {
+    this.checkLoginStatus();
   },
   methods: {
     jumpLogin() {
@@ -44,9 +53,45 @@ export default {
     jumpProfile() {
       this.$router.push("/profile");
     },
-    logout() {
-      // Add your logout logic here
-      this.$emit("logout");
+    checkLoginStatus() {
+      const token = Cookies.get('token');
+      if (!token) {
+        this.isLoggedIn = false;
+        return;
+      }
+      axios.post("/user/getprofile",
+        {
+          "authorization": token
+        })
+        .then(response => {
+          if (response.data.code === 0) {
+            this.isLoggedIn = true;
+            this.username = response.data.payload.username;
+          } else {
+            ElMessage.error(response.data.err);
+            return;
+          }
+        })
+    },
+    handleLogout() {
+      const token = Cookies.get('token');
+      axios.post("/user/logout",
+        {
+          "authorization": token
+        })
+        .then(response => {
+          if (response.data.code === 0) {
+            ElMessage.success("注销成功");
+            Cookies.remove('token');
+            this.jumpLogin();
+          } else {
+            ElMessage.error(response.data.err);
+            return;
+          }
+        })
+        .catch(error => {
+          console.log(error);
+        })
     },
   },
 };

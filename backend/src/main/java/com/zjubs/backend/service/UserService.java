@@ -33,6 +33,17 @@ public class UserService {
 
     public void saveToken(String username, String token) {
         redisUtils.set(username, token);
+        redisUtils.set(token, username);
+    }
+
+    public String getUsernameByToken(String token) {
+        return (String)redisUtils.get(token);
+    }
+
+    public void removeToken(String token) {
+        String username = (String)redisUtils.get(token);
+        redisUtils.del(token);
+        redisUtils.del(username);
     }
 
     public boolean checkToken(String username, String token) {
@@ -41,5 +52,13 @@ public class UserService {
             return false;
         }
         return true;
+    }
+
+    public User getUserByUsername(String username) {
+        return userMapper.selectByUsername(username);
+    }
+
+    public void updateProfile(String username, User user) {
+        userMapper.updateProfile(username, user.getPassword(), user.getPhone(), user.getGender(), user.getAddress());
     }
 }

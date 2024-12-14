@@ -6,6 +6,6 @@ CREATE TABLE IF NOT EXISTS user (
     password VARCHAR(255) NOT NULL,
     phone VARCHAR(20) NOT NULL,
     email VARCHAR(100) NOT NULL UNIQUE,
-    gender TINYINT NOT NULL,  -- 0: 不愿透露, 1: 男, 2: 女
+    gender VARCHAR(20) NOT NULL,
     address VARCHAR(255) NOT NULL
 );

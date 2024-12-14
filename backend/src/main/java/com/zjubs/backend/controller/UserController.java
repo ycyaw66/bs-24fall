@@ -10,6 +10,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.zjubs.backend.controller.dto.AuthorizationBody;
+import com.zjubs.backend.controller.dto.ChangePasswordBody;
+import com.zjubs.backend.controller.dto.ChangeProfileBody;
 import com.zjubs.backend.controller.dto.UserLoginBody;
 import com.zjubs.backend.model.User;
 import com.zjubs.backend.service.UserService;
@@ -42,4 +45,61 @@ public class UserController {
         return RespResult.success(data);
     }
     
+    @PostMapping("/logout")
+    public RespResult logout(@Validated @RequestBody AuthorizationBody body) {
+        String token = body.getAuthorization();
+        String username = userService.getUsernameByToken(token);
+        if (!userService.checkToken(username, token)) {
+            return RespResult.fail("身份验证失败");
+        }
+        userService.removeToken(token);
+        return RespResult.success();
+    }
+
+    @PostMapping("/getprofile")
+    public RespResult getProfile(@Validated @RequestBody AuthorizationBody body) {
+        String token = body.getAuthorization();
+        String username = userService.getUsernameByToken(token);
+        if (!userService.checkToken(username, token)) {
+            return RespResult.fail("身份验证失败");
+        }
+        User user = userService.getUserByUsername(username);
+        Map<String, Object> data = new HashMap<String, Object>(5) {{
+            put("username", user.getUsername());
+            put("email", user.getEmail());
+            put("phone", user.getPhone());
+            put("gender", user.getGender());
+            put("address", user.getAddress());
+        }};
+        return RespResult.success(data);
+    }
+
+    @PostMapping("/changeprofile")
+    public RespResult changeProfile(@Validated @RequestBody ChangeProfileBody body) {
+        String token = body.getAuthorization();
+        String username = userService.getUsernameByToken(token);
+        if (!userService.checkToken(username, token)) {
+            return RespResult.fail("身份验证失败");
+        }
+        User user = userService.getUserByUsername(username);
+        user.setPhone(body.getPhone());
+        user.setGender(body.getGender());
+        user.setAddress(body.getAddress());
+        userService.updateProfile(username, user);
+        return RespResult.success();
+    }
+
+    @PostMapping("/password")
+    public RespResult changePassword(@Validated @RequestBody ChangePasswordBody body) {
+        String username = body.getUsername();
+        String password = body.getPassword();
+        String newpassword = body.getNewpassword();
+        User user = userService.login(username, password);
+        if (user == null) {
+            return RespResult.fail("原密码错误");
+        }
+        user.setPassword(newpassword);
+        userService.updateProfile(username, user);
+        return RespResult.success();
+    }
 }

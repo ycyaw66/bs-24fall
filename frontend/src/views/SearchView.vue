@@ -52,15 +52,12 @@ export default {
       itemList: [], // 搜索返回的商品列表
     };
   },
-  mounted() {
-    this.checkLoginStatus(); // 页面加载时获取用户名
-  },
   methods: {
     jumpLogin() {
-      this.$router.push("/user/login"); // 跳转到登录页
+      this.$router.push("/user/login");
     },
     jumpProfile() {
-      this.$router.push("/profile"); // 跳转到用户资料页
+      this.$router.push("/profile");
     },
     handleSearch() {
       if (!this.isLoggedIn) {
@@ -74,24 +71,6 @@ export default {
       } else {
         this.$message.warning("请输入搜索内容！");
       }
-    },
-    checkLoginStatus() {
-      // 实际中修改为调用后端 API 检查是否已登录
-      // const user = localStorage.getItem("user"); // 从本地存储获取用户信息
-      const user = "ycyaw"; // 测试用，假设用户已登录
-      if (user) {
-        this.isLoggedIn = true;
-        this.username = user;
-        // this.username = JSON.parse(user).username; // 假设用户信息存储中有 username
-      } else {
-        this.isLoggedIn = false;
-      }
-    },
-    handleLogout() {
-      // 实际中修改为调用后端 API 注销登录
-      // localStorage.removeItem("user"); // 清除本地存储的用户信息
-      this.isLoggedIn = false;
-      this.jumpLogin(); // 注销后跳转到登录页
     },
     fetchItems() {
       // 模拟后端返回数据

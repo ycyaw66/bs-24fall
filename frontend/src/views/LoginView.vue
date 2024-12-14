@@ -55,6 +55,13 @@ export default {
       }
     };
   },
+  mounted() {
+    // 检查是否已经登录
+    // const token = Cookies.get('token');
+    // if (token) {
+    //   this.jumpSearch();
+    // }
+  },
   methods: {
     jumpRegister() {
       this.$router.push('/user/register');
@@ -66,7 +73,6 @@ export default {
       this.$router.push('/search');
     },
     handleLogin() {
-      // 加密后传给后端
       const encrypted = CryptoJS.SHA256(this.loginForm.password).toString();
       // console.log(encrypted);
       axios.post("/user/login",
@@ -78,7 +84,6 @@ export default {
           if (response.data.code === 0) {
             ElMessage.success("登录成功");
             Cookies.set('token', response.data.payload.token);
-            console.log(Cookies.get('token'));
             this.jumpSearch();
           } else {
             ElMessage.error(response.data.err);

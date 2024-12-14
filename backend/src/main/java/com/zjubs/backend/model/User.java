@@ -19,6 +19,6 @@ public class User {
     private String password;
     private String email;
     private String phone;
-    private Integer gender; // 0: 不愿透露, 1: 男, 2: 女
+    private String gender;
     private String address;
 }
