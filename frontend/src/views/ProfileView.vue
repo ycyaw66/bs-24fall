@@ -9,11 +9,7 @@
     <el-card class="profile-card">
       <!-- 用户头像和用户名 -->
       <div class="header">
-        <el-avatar
-          src="https://via.placeholder.com/100"
-          size="100"
-          class="avatar"
-        />
+        <img src="../assets/avatar.png" alt="用户头像" class="avatar" />
         <div class="user-info">
           <h2>{{ this.username }}</h2>
           <p class="email">{{ userInfo.email }}</p>
@@ -292,6 +288,9 @@ export default {
 }
 
 .avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
   margin-right: 20px;
 }
 
