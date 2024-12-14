@@ -68,6 +68,7 @@ export default {
     handleLogin() {
       // 加密后传给后端
       const encrypted = CryptoJS.SHA256(this.loginForm.password).toString();
+      // console.log(encrypted);
       axios.post("/user/login",
         {
           "username": this.loginForm.username,
@@ -77,6 +78,7 @@ export default {
           if (response.data.code === 0) {
             ElMessage.success("登录成功");
             Cookies.set('token', response.data.payload.token);
+            console.log(Cookies.get('token'));
             this.jumpSearch();
           } else {
             ElMessage.error(response.data.err);

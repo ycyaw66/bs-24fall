@@ -8,12 +8,14 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.zjubs.backend.controller.dto.UserLoginBody;
 import com.zjubs.backend.model.User;
 import com.zjubs.backend.service.UserService;
 import com.zjubs.backend.utils.RespResult;
 
+@RestController
 @RequestMapping("/user")
 public class UserController {
 
