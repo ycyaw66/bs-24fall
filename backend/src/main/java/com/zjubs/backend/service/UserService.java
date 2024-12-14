@@ -61,4 +61,15 @@ public class UserService {
     public void updateProfile(String username, User user) {
         userMapper.updateProfile(username, user.getPassword(), user.getPhone(), user.getGender(), user.getAddress());
     }
+
+    public Boolean register(User user) {
+        if (userMapper.selectByUsername(user.getUsername()) != null) {
+            return false;
+        }
+        if (userMapper.selectByEmail(user.getEmail()) != null) {
+            return false;
+        }
+        userMapper.insert(user);
+        return true;
+    }
 }

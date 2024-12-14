@@ -14,8 +14,10 @@ public interface UserMapper extends BaseMapper<User> {
     @Select("SELECT * FROM user WHERE username = #{username}")
     User selectByUsername(String username);
 
+    @Select("SELECT * FROM user WHERE email = #{email}")
+    User selectByEmail(String email);
+
     // 更新 phone，gender和address
     @Update("UPDATE user SET password = #{password}, phone = #{phone}, gender = #{gender}, address = #{address} WHERE username = #{username}")
     void updateProfile(String username, String password, String phone, String gender, String address);
-    
 }

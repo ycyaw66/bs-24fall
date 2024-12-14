@@ -19,3 +19,8 @@ spring:
             host: localhost
             port: 6379
             database: 1
+
+mail: 
+    mail-address: "19550102041@163.com"
+    password: "NWqddpAiPmttZrB9"
+    redis-start-with: "mail-code:"

@@ -13,9 +13,13 @@ import org.springframework.web.bind.annotation.RestController;
 import com.zjubs.backend.controller.dto.AuthorizationBody;
 import com.zjubs.backend.controller.dto.ChangePasswordBody;
 import com.zjubs.backend.controller.dto.ChangeProfileBody;
+import com.zjubs.backend.controller.dto.RegisterBody;
+import com.zjubs.backend.controller.dto.SendMailBody;
 import com.zjubs.backend.controller.dto.UserLoginBody;
 import com.zjubs.backend.model.User;
+import com.zjubs.backend.service.EmailValidService;
 import com.zjubs.backend.service.UserService;
+import com.zjubs.backend.utils.ApiResult;
 import com.zjubs.backend.utils.RespResult;
 
 @RestController
@@ -24,6 +28,9 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private EmailValidService emailValidService;
 
     @PostMapping("/login")
     public RespResult login(@Validated @RequestBody UserLoginBody body) {
@@ -100,6 +107,33 @@ public class UserController {
         }
         user.setPassword(newpassword);
         userService.updateProfile(username, user);
+        return RespResult.success();
+    }
+
+    @PostMapping("/sendmail")
+    public RespResult sendMail(@Validated @RequestBody SendMailBody body) {
+        String mail = body.getMail();
+        ApiResult apiResult = emailValidService.sendEmail(mail, null);
+        if (!apiResult.ok) {
+            return RespResult.fail(apiResult.message);
+        }
+        String uuid = (String)apiResult.payload;
+        Map<String, String> data = new HashMap<String, String>(1) {{
+            put("uuid", uuid); 
+        }};
+        return RespResult.success(data);
+    }
+
+    @PostMapping("/register")
+    public RespResult register(@Validated @RequestBody RegisterBody body) {
+        ApiResult apiResult = emailValidService.validCode(body.getUuid(), body.getEmail(), body.getCode());
+        if (!apiResult.ok) {
+            return RespResult.fail(apiResult.message);
+        }
+        User user = new User(null, body.getUsername(), body.getPassword(), body.getEmail(), null, null, null);
+        if (!userService.register(user)) {
+            return RespResult.fail("用户名或邮箱已存在");
+        }
         return RespResult.success();
     }
 }

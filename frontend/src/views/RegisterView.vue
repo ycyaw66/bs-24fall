@@ -115,15 +115,15 @@ export default {
         });
       },
       handleRegister() {
-        // 加密后传给后端
         const encrypted = CryptoJS.SHA256(this.registerForm.password).toString();
+        console.log(this.uuid);
         axios.post("/user/register",
         {
           "username": this.registerForm.username,
           "password": encrypted,
           "email": this.registerForm.email,
-          "uuid": this.uuid,
-          "verification_code": this.registerForm.verificationCode
+          "code": this.registerForm.verificationCode,
+          "uuid": this.uuid
         })
         .then(response => {
           console.log(response.data);
@@ -148,7 +148,7 @@ export default {
         this.countDown = 30;
         this.isCounting = true;
         this.doCountdown();
-        axios.post("/user/register/sendMail",
+        axios.post("/user/sendmail",
           {
             "mail": this.registerForm.email
           })
