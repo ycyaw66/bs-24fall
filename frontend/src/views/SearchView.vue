@@ -39,6 +39,9 @@
 
 <script>
 import HeaderComponent from "@/components/HeaderComponent.vue";
+import Cookies from "js-cookie";
+import axios from "axios";
+import { ElMessage } from "element-plus";
 
 export default {
   components: {
@@ -48,9 +51,11 @@ export default {
     return {
       searchQuery: "",
       isLoggedIn: false, // 登录状态
-      username: "", // 当前登录的用户名
       itemList: [], // 搜索返回的商品列表
     };
+  },
+  mounted() {
+    this.checkLoginStatus();
   },
   methods: {
     jumpLogin() {
@@ -58,6 +63,26 @@ export default {
     },
     jumpProfile() {
       this.$router.push("/profile");
+    },
+    checkLoginStatus() {
+      const token = Cookies.get('token');
+      if (!token) {
+        this.isLoggedIn = false;
+        return;
+      }
+      axios.post("/user/getprofile",
+        {
+          "authorization": token
+        })
+        .then(response => {
+          if (response.data.code === 0) {
+            this.isLoggedIn = true;
+            this.username = response.data.payload.username;
+          } else {
+            ElMessage.error(response.data.err);
+            return;
+          }
+        })
     },
     handleSearch() {
       if (!this.isLoggedIn) {
