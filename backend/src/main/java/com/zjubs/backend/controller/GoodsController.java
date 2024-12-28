@@ -33,8 +33,8 @@ public class GoodsController {
         String keyword = body.getKeyword();
         if (platform.equals("jd")) {
             goodsList = goodsService.getJdGoods(keyword);
-        } else if ("suning".equals(platform)) {
-            // goodsList = goodsService.getSuningGoods(keyword);
+        } else if (platform.equals("suning")) {
+            goodsList = goodsService.getSuningGoods(keyword);
         }
 
         Map<String, Object> data = new HashMap<>();

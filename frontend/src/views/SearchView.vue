@@ -10,11 +10,16 @@
     </div>
     <div class="search-container">
       <el-input
-        placeholder="请输入商品名称"
         v-model="searchQuery"
-        class="search-box"
+        placeholder="请输入商品名称"
         clearable
       >
+        <template #prepend>
+          <el-select v-model="platform" placeholder="选择平台" style="width: 100px">
+            <el-option label="京东" value="jd" />
+            <el-option label="苏宁易购" value="suning" />
+          </el-select>
+        </template>
         <template #append>
           <el-button type="primary" @click="handleSearch">搜索</el-button>
         </template>
@@ -29,7 +34,7 @@
     <div v-if="itemList.length > 0" class="item-list">
       <el-row :gutter="20">
         <el-col :span="6" v-for="(item, index) in itemList" :key="index">
-          <el-card shadow="hover" class="item-card">
+          <el-card v-if="item.productPrice" shadow="hover" class="item-card">
             <img :src="item.picImg" alt="商品图片" class="item-image" />
             <div class="item-info">
               <h3>{{ item.productTitle }}</h3>
@@ -69,6 +74,7 @@ export default {
       itemList: [], // 搜索返回的商品列表
       isLoading: false, // 是否正在加载
       hasSearched: false, // 是否已进行搜索
+      platform: "jd", // 默认搜索京东
     };
   },
   mounted() {
@@ -135,7 +141,7 @@ export default {
       axios.post("/goods/search",
         {
           "keyword": this.searchQuery,
-          "platform": "jd",
+          "platform": this.platform,
           "authorization": Cookies.get("token")
         })
         .then(response => {
@@ -188,12 +194,6 @@ export default {
 .search-container {
   width: 80%;
   max-width: 600px;
-}
-
-.search-box {
-  width: 100%;
-  height: 50px;
-  font-size: 16px;
 }
 
 .title {
@@ -306,6 +306,4 @@ export default {
   color: #888;
   text-align: center;
 }
-
-
 </style>
