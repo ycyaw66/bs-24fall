@@ -1,0 +1,71 @@
+#codeing=utf-8
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+import time
+from bs4 import BeautifulSoup
+import json
+import sys
+
+def get_value_in_html(text):
+    soup = BeautifulSoup(text, 'html.parser')
+    items = soup.find_all('li', {'clstag': lambda x: x and 'ri_same_recommend' in x})
+ 
+    result = []
+    for item in items:
+        pic_img = item.find('div', class_='pic').find('img', class_='img_k')['src']
+        pic_img = f"https:{pic_img}"
+        a_tag = item.find('div', class_='li_cen_bot').find('a')
+        if a_tag is None:
+            continue
+        product_link = a_tag['href']
+        price = a_tag.find('div', class_='commodity_info').find('span', class_='price')
+        if price is not None:
+            price = price.text.strip()
+            price = price.replace('￥', '¥').strip()
+        else:
+            price = ''
+        title = a_tag.find('div', class_='commodity_tit')
+        if title is not None:
+            title = title.text.strip()
+        else:
+            title = ''
+ 
+        product_info = {
+            'price': price,
+            'title': title,
+        }
+ 
+        result.append({
+            "pic_img": pic_img,
+            "product_link": product_link,
+            "product_info": product_info
+        })
+ 
+    return result
+
+if __name__ == '__main__':
+    keyword = sys.argv[1]
+
+    chrome_options = Options()
+    chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--disable-gpu")
+    driver = webdriver.Chrome(options=chrome_options)
+
+    try:
+        url = f'https://re.jd.com/search?keyword={keyword}&enc=utf-8'
+        driver.get(url)
+
+        time.sleep(3)
+
+        html = driver.page_source
+
+        result_list = get_value_in_html(html)
+
+        with open("jd_search_result.json", "w", encoding="utf-8") as file:
+            json.dump(result_list, file, ensure_ascii=False, indent=4)
+
+    except Exception as e:
+        print(f"请求异常: {e}")
+
+    finally:
+        driver.quit()
