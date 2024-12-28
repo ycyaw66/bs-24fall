@@ -34,7 +34,7 @@
     <div v-if="itemList.length > 0" class="item-list">
       <el-row :gutter="20">
         <el-col :span="6" v-for="(item, index) in itemList" :key="index">
-          <el-card v-if="item.productPrice" shadow="hover" class="item-card">
+          <el-card shadow="hover" class="item-card">
             <img :src="item.picImg" alt="商品图片" class="item-image" />
             <div class="item-info">
               <h3>{{ item.productTitle }}</h3>
@@ -147,7 +147,7 @@ export default {
         .then(response => {
           if (response.data.code === 0) {
             // 如果返回数据成功，更新商品列表
-            this.itemList = response.data.payload.goods;
+            this.itemList = response.data.payload.goods.filter(item => item.productPrice && item.productPrice.trim() !== '');
             console.log(this.itemList);
           } else {
             ElMessage.error("获取商品信息失败");
