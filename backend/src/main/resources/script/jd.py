@@ -5,6 +5,7 @@ import time
 from bs4 import BeautifulSoup
 import json
 import sys
+import os
 
 def get_value_in_html(text):
     soup = BeautifulSoup(text, 'html.parser')
@@ -30,15 +31,11 @@ def get_value_in_html(text):
         else:
             title = ''
  
-        product_info = {
-            'price': price,
-            'title': title,
-        }
- 
         result.append({
-            "pic_img": pic_img,
-            "product_link": product_link,
-            "product_info": product_info
+            "picImg": pic_img,
+            "productLink": product_link,
+            'productPrice': price,
+            'productTitle': title
         })
  
     return result
@@ -60,8 +57,9 @@ if __name__ == '__main__':
         html = driver.page_source
 
         result_list = get_value_in_html(html)
-
-        with open("jd_search_result.json", "w", encoding="utf-8") as file:
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        json_file_path = os.path.join(script_dir, "jd_search_result.json")
+        with open(json_file_path, "w", encoding="utf-8") as file:
             json.dump(result_list, file, ensure_ascii=False, indent=4)
 
     except Exception as e:

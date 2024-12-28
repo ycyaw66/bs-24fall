@@ -1,4 +1,5 @@
 DROP TABLE IF EXISTS `user` cascade;
+DROP TABLE IF EXISTS `goods` cascade;
 
 CREATE TABLE IF NOT EXISTS user (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -8,4 +9,12 @@ CREATE TABLE IF NOT EXISTS user (
     email VARCHAR(100) NOT NULL UNIQUE,
     gender VARCHAR(20),
     address VARCHAR(255)
+);
+
+CREATE TABLE IF NOT EXISTS goods (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    pic_img LONGTEXT NOT NULL,
+    product_link LONGTEXT NOT NULL,
+    product_title VARCHAR(255) NOT NULL,
+    product_price VARCHAR(50) NOT NULL
 );
