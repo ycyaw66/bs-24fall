@@ -43,7 +43,10 @@
                 <span class="price-integer">{{ formatPrice(item.productPrice).integer }}.</span>
                 <span class="price-decimal">{{ formatPrice(item.productPrice).decimal }}</span>
               </p>
-              <a :href="item.productLink" target="_blank">查看商品</a>
+            </div>
+            <div class="item-links">
+              <a @click="openItemDetail(item)" class="view-detail">查看商品详情</a>
+              <a :href="item.productLink" target="_blank" class="jump-link">跳转原商品链接</a>
             </div>
           </el-card>
         </el-col>
@@ -53,6 +56,26 @@
     <div v-if="itemList.length === 0 && !isLoading && hasSearched" class="no-results-message">
       <p>抱歉，没有找到与关键词相关的商品</p>
     </div>
+
+    <!-- 商品详情弹窗 -->
+    <el-dialog
+      v-model="showItemDetail"
+      title="商品详情"
+      width="50%"
+    >
+      <div class="item-detail">
+        <img :src="selectedItem.picImg" alt="商品图片" class="item-detail-image" />
+        <div class="item-detail-info">
+          <h3>{{ selectedItem.productTitle }}</h3>
+          <p class="item-detail-price">
+            <span class="price-symbol">¥</span>
+            <span class="price-integer">{{ formatPrice(selectedItem.productPrice).integer }}.</span>
+            <span class="price-decimal">{{ formatPrice(selectedItem.productPrice).decimal }}</span>
+          </p>
+        </div>
+        <el-button :type="selectedItem.isliked === '0' ? 'primary' : 'danger'" @click="toggleLike(selectedItem)" style="width: 80px">{{ selectedItem.isliked === "0" ? "收藏" : "取消收藏" }}</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -75,6 +98,14 @@ export default {
       isLoading: false, // 是否正在加载
       hasSearched: false, // 是否已进行搜索
       platform: "jd", // 默认搜索京东
+      showItemDetail: false,
+      selectedItem: {
+        picImg: "",
+        productTitle: "",
+        productPrice: "",
+        productLink: "",
+        isliked: "0" // isliked: 0 表示未收藏，1 表示收藏
+      },
     };
   },
   mounted() {
@@ -137,7 +168,7 @@ export default {
     fetchItems() {
       console.log("fetchItems");
       console.log(this.searchQuery);
-      this.isLoading = true; // 显示加载动画
+      this.isLoading = true;
       axios.post("/goods/search",
         {
           "keyword": this.searchQuery,
@@ -150,16 +181,66 @@ export default {
             this.itemList = response.data.payload.goods.filter(item => item.productPrice && item.productPrice.trim() !== '');
             console.log(this.itemList);
           } else {
-            ElMessage.error("获取商品信息失败");
+            ElMessage.error(response.data.err);
           }
         })
         .catch(error => {
-          ElMessage.error("网络错误，请稍后重试");
+          ElMessage.error("出错了，请稍后重试");
           console.error(error);
         })
         .finally(() => {
           this.isLoading = false;
         })
+    },
+    openItemDetail(item) {
+      this.selectedItem = item;
+      console.log(this.selectedItem);
+      axios.post("/goods/isliked",
+        {
+          username: this.username,
+          goods: item.productLink,
+          authorization: Cookies.get("token")
+        })
+        .then(response => {
+          if (response.data.code === 0) {
+            console.log(response.data.payload.isliked);
+            this.selectedItem.isliked = response.data.payload.isliked;
+            this.showItemDetail = true;
+          } else {
+            ElMessage.error(response.data.err);
+          }
+        })
+        .catch(error => {
+          console.error(error);
+          this.$message.error("出错了，请稍后重试");
+        });
+    },
+    handleCloseItemDetail() {
+      this.showItemDetail = false;
+      this.selectedItem = {};
+    },
+    toggleLike(item) {
+      const operation = item.isliked === "0" ? "1" : "0";
+      axios.post("/goods/like", 
+        {
+          username: this.username,
+          goods: item.productLink,
+          operation: operation,
+          authorization: Cookies.get("token")
+        })
+        .then(response => {
+          if (response.data.code === 0) {
+            item.isliked = operation;
+            const message = item.isliked === "1" ? "收藏成功" : "取消收藏成功";
+            this.$message.success(message);
+          } else {
+            ElMessage.error(response.data.err);
+          }
+        })
+        .catch(error => {
+          console.error(error);
+          this.$message.error("出错了，请稍后重试");
+        });
     },
   },
 };
@@ -306,4 +387,61 @@ export default {
   color: #888;
   text-align: center;
 }
+
+.item-detail {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.item-detail-image {
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.item-detail-info {
+  flex: 1;
+  margin-left: 20px;
+}
+
+.item-detail-price {
+  font-size: 20px;
+  color: #ff6600;
+  margin-top: 10px;
+}
+
+.item-links {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+.item-links a {
+  font-size: 14px;
+  color: #42b983;
+  text-decoration: none;
+}
+
+.item-links .jump-link {
+  color: #007bff;
+}
+
+.item-links .jump-link:hover {
+  text-decoration: underline;
+}
+
+.view-detail {
+  font-size: 14px;
+  color: #42b983;
+  text-decoration: none;
+  cursor: pointer; /* 鼠标变为手型 */
+}
+
+.view-detail:hover {
+  text-decoration: underline;
+}
+
+
 </style>

@@ -1,4 +1,4 @@
--- DROP TABLE IF EXISTS `user_goods` cascade;
+DROP TABLE IF EXISTS `userlike` cascade;
 -- DROP TABLE IF EXISTS `user` cascade;
 -- DROP TABLE IF EXISTS `goods` cascade;
 
@@ -22,10 +22,7 @@ CREATE TABLE IF NOT EXISTS goods (
     platform VARCHAR(50) NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS user_goods (
-    user_id BIGINT,
-    goods_id BIGINT,
-    PRIMARY KEY (user_id, goods_id),
-    FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE,
-    FOREIGN KEY (goods_id) REFERENCES goods(id) ON DELETE CASCADE
+CREATE TABLE IF NOT EXISTS userlike (
+    username VARCHAR(50) NOT NULL,
+    goods_link LONGTEXT NOT NULL
 );

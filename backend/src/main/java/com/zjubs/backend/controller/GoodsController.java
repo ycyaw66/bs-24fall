@@ -11,9 +11,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.zjubs.backend.controller.dto.IsLikedBody;
+import com.zjubs.backend.controller.dto.LikeBody;
 import com.zjubs.backend.controller.dto.SearchBody;
 import com.zjubs.backend.model.Goods;
 import com.zjubs.backend.service.GoodsService;
+import com.zjubs.backend.service.UserService;
 import com.zjubs.backend.utils.RespResult;
 
 import lombok.extern.slf4j.Slf4j;
@@ -26,8 +29,16 @@ public class GoodsController {
     @Autowired
     private GoodsService goodsService;
 
+    @Autowired
+    private UserService userService;
+
     @PostMapping("/search")
     public RespResult searchGoods(@Validated @RequestBody SearchBody body) {
+        String username = userService.getUsernameByToken(body.getAuthorization());
+        String token = body.getAuthorization();
+        if (!userService.checkToken(username, token)) {
+            return RespResult.fail("用户未登录");
+        }
         String platform = body.getPlatform();
         String keyword = body.getKeyword();
         List<Goods> goodsList = goodsService.getGoodsFromDB(platform, keyword);
@@ -42,5 +53,31 @@ public class GoodsController {
         data.put("goods", goodsList);
 
         return RespResult.success(data);
+    }
+
+    @PostMapping("/isliked")
+    public RespResult isGoodsLiked(@Validated @RequestBody IsLikedBody body) {
+        String username = userService.getUsernameByToken(body.getAuthorization());
+        String token = body.getAuthorization();
+        if (!userService.checkToken(username, token)) {
+            return RespResult.fail("用户未登录");
+        }
+        String isLiked = goodsService.isGoodsLiked(body.getUsername(), body.getGoods());
+
+        Map<String, Object> data = new HashMap<String, Object>(1) {{
+            put("isliked", isLiked);
+        }};
+        return RespResult.success(data);
+    }
+    
+    @PostMapping("/like")
+    public RespResult likeGoods(@Validated @RequestBody LikeBody body) {
+        String username = userService.getUsernameByToken(body.getAuthorization());
+        String token = body.getAuthorization();
+        if (!userService.checkToken(username, token)) {
+            return RespResult.fail("用户未登录");
+        }
+        goodsService.likeGoods(body.getUsername(), body.getGoods(), body.getOperation());
+        return RespResult.success();
     }
 }

@@ -10,7 +10,9 @@ import org.springframework.core.io.ClassPathResource;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.zjubs.backend.mapper.GoodsMapper;
+import com.zjubs.backend.mapper.UserlikeMapper;
 import com.zjubs.backend.model.Goods;
+import com.zjubs.backend.model.Userlike;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -19,7 +21,12 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 public class GoodsService {
-    @Autowired GoodsMapper goodsMapper;
+    
+    @Autowired
+    GoodsMapper goodsMapper;
+
+    @Autowired
+    UserlikeMapper userlikeMapper;
 
     public List<Goods> getJdGoods(String keyword) {
         try {
@@ -98,6 +105,19 @@ public class GoodsService {
             goods.setPlatform(platform);
             goods.setKeyword(keyword);
             goodsMapper.insert(goods);
+        }
+    }
+
+    public String isGoodsLiked(String username, String goods) {
+        Userlike userlike = userlikeMapper.selectUserlike(username, goods);
+        return userlike == null ? "0" : "1";
+    }
+
+    public void likeGoods(String username, String goods, String operation) {
+        if (operation.equals("1")) {
+            userlikeMapper.insert(new Userlike(username, goods));
+        } else {
+            userlikeMapper.deleteUserlike(username, goods);
         }
     }
 }
