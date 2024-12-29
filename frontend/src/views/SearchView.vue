@@ -92,6 +92,7 @@ export default {
   },
   data() {
     return {
+      username: "",
       searchQuery: "",
       isLoggedIn: false, // 登录状态
       itemList: [], // 搜索返回的商品列表
@@ -214,10 +215,6 @@ export default {
           console.error(error);
           this.$message.error("出错了，请稍后重试");
         });
-    },
-    handleCloseItemDetail() {
-      this.showItemDetail = false;
-      this.selectedItem = {};
     },
     toggleLike(item) {
       const operation = item.isliked === "0" ? "1" : "0";
@@ -442,6 +439,4 @@ export default {
 .view-detail:hover {
   text-decoration: underline;
 }
-
-
 </style>

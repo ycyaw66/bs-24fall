@@ -12,4 +12,7 @@ import org.apache.ibatis.annotations.Select;
 public interface GoodsMapper extends BaseMapper<Goods> {
     @Select("SELECT * FROM goods WHERE platform = #{platform} AND keyword = #{keyword}")
     List<Goods> selectByPlatformAndKeyword(String platform, String keyword);
+
+    @Select("SELECT * FROM goods WHERE product_link = #{productLink}")
+    Goods getGoodsByLink(String productLink);
 }

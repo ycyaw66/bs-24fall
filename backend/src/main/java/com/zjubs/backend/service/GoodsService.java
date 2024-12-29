@@ -3,6 +3,7 @@ package com.zjubs.backend.service;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -119,5 +120,15 @@ public class GoodsService {
         } else {
             userlikeMapper.deleteUserlike(username, goods);
         }
+    }
+
+    public List<Goods> getUserlike(String username) {
+        List<Userlike> goodsList = userlikeMapper.selectUserlikeByUsername(username);
+        List<Goods> goods = new ArrayList<>();
+        for (Userlike userlike : goodsList) {
+            Goods good = goodsMapper.getGoodsByLink(userlike.getGoodsLink());
+            goods.add(good);
+        }
+        return goods;
     }
 }

@@ -1,4 +1,4 @@
-DROP TABLE IF EXISTS `userlike` cascade;
+-- DROP TABLE IF EXISTS `userlike` cascade;
 -- DROP TABLE IF EXISTS `user` cascade;
 -- DROP TABLE IF EXISTS `goods` cascade;
 

@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.zjubs.backend.controller.dto.AuthorizationBody;
 import com.zjubs.backend.controller.dto.IsLikedBody;
 import com.zjubs.backend.controller.dto.LikeBody;
 import com.zjubs.backend.controller.dto.SearchBody;
@@ -80,4 +81,19 @@ public class GoodsController {
         goodsService.likeGoods(body.getUsername(), body.getGoods(), body.getOperation());
         return RespResult.success();
     }
+
+    @PostMapping("/userlike")
+    public RespResult getUserlike(@Validated @RequestBody AuthorizationBody body) {
+        String username = userService.getUsernameByToken(body.getAuthorization());
+        String token = body.getAuthorization();
+        if (!userService.checkToken(username, token)) {
+            return RespResult.fail("用户未登录");
+        }
+        List<Goods> goodsList = goodsService.getUserlike(username);
+        Map<String, Object> data = new HashMap<String, Object>(1) {{
+            put("goods", goodsList);
+        }};
+        return RespResult.success(data);
+    }
+    
 }
