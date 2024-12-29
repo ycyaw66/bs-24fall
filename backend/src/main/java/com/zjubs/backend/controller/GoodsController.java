@@ -12,10 +12,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.zjubs.backend.controller.dto.AuthorizationBody;
+import com.zjubs.backend.controller.dto.HistoryBody;
 import com.zjubs.backend.controller.dto.IsLikedBody;
 import com.zjubs.backend.controller.dto.LikeBody;
 import com.zjubs.backend.controller.dto.SearchBody;
 import com.zjubs.backend.model.Goods;
+import com.zjubs.backend.model.History;
 import com.zjubs.backend.service.GoodsService;
 import com.zjubs.backend.service.UserService;
 import com.zjubs.backend.utils.RespResult;
@@ -96,4 +98,12 @@ public class GoodsController {
         return RespResult.success(data);
     }
     
+    @PostMapping("/history")
+    public RespResult getHistory(@Validated @RequestBody HistoryBody body) {
+        List<History> historyList = goodsService.getHistory(body.getGoods());
+        Map<String, Object> data = new HashMap<String, Object>(1) {{
+            put("history", historyList);
+        }};
+        return RespResult.success(data);
+    }
 }

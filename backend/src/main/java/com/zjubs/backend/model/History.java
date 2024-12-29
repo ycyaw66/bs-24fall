@@ -13,15 +13,11 @@ import lombok.RequiredArgsConstructor;
 @Data
 @AllArgsConstructor
 @RequiredArgsConstructor
-@TableName("goods")
-public class Goods {
+@TableName("history")
+public class History {
     @TableId(type = IdType.AUTO)
     private Long id;
-    private String picImg;
-    private String productLink;
     private String productTitle;
     private String productPrice;
-    private String keyword;
-    private String platform;
     private Timestamp timeStamp;
 }

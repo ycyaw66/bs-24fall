@@ -12,5 +12,5 @@ import lombok.RequiredArgsConstructor;
 @TableName("userlike")
 public class Userlike {
     private String username;
-    private String goodsLink;
+    private String goodsTitle;
 }

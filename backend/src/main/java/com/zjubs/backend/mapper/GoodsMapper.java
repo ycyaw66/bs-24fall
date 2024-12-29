@@ -5,6 +5,7 @@ import com.zjubs.backend.model.Goods;
 
 import java.util.List;
 
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 
@@ -13,6 +14,9 @@ public interface GoodsMapper extends BaseMapper<Goods> {
     @Select("SELECT * FROM goods WHERE platform = #{platform} AND keyword = #{keyword}")
     List<Goods> selectByPlatformAndKeyword(String platform, String keyword);
 
-    @Select("SELECT * FROM goods WHERE product_link = #{productLink}")
-    Goods getGoodsByLink(String productLink);
+    @Select("SELECT * FROM goods WHERE product_title = #{productTitle}")
+    Goods getGoodsByTitle(String productTitle);
+
+    @Delete("DELETE FROM goods WHERE product_title = #{productTitle}")
+    void deleteGoodsByTitle(String productTitle);
 }

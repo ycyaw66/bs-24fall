@@ -54,6 +54,9 @@
         </div>
         <el-button :type="selectedItem.isliked === '0' ? 'primary' : 'danger'" @click="toggleLike(selectedItem)" style="width: 80px">{{ selectedItem.isliked === "0" ? "收藏" : "取消收藏" }}</el-button>
       </div>
+      <div>
+        <div class="echart-box" ref="box"></div>
+      </div>
     </el-dialog>
   </div>
 </template>
@@ -63,6 +66,7 @@ import { ElMessage } from "element-plus";
 import HeaderComponent from "@/components/HeaderComponent.vue";
 import axios from "axios";
 import Cookies from "js-cookie";
+import * as echarts from 'echarts';
 
 export default {
   components: {
@@ -80,7 +84,8 @@ export default {
         productTitle: "",
         productPrice: "",
         productLink: "",
-        isliked: "0"
+        isliked: "0",
+        history: []
       },
     };
   },
@@ -157,19 +162,85 @@ export default {
       });
     },
     openItemDetail(item) {
+      this.showItemDetail = true;
       this.selectedItem = item;
       console.log(this.selectedItem);
+      axios.post("/goods/history",
+      {
+        goods: item.productTitle,
+      })
+      .then(response => {
+        if (response.data.code === 0) {
+          console.log(response.data.payload.history);
+          this.selectedItem.history = response.data.payload.history;
+          const prices = this.selectedItem.history.map(h => parseFloat(h.productPrice.replace("¥", "")));
+          const times = this.selectedItem.history.map(h => new Date(h.timeStamp).toLocaleString());
+
+          // 配置 ECharts 图表
+          let option = {
+            title: {
+              text: '历史价格变化',
+              left: 'center'
+            },
+            tooltip: {
+              trigger: 'axis',
+              formatter: params => {
+                const data = params[0];
+                return `${data.axisValue}<br/>价格: ¥${data.data.toFixed(2)}`;
+              }
+            },
+            xAxis: {
+              type: 'category',
+              data: times,
+              axisLabel: {
+                rotate: 45,
+                formatter: value => value.split(' ').join('\n') // 日期换行显示
+              }
+            },
+            yAxis: {
+              type: 'value',
+              name: '价格 (¥)',
+              axisLabel: {
+                formatter: '¥{value}'
+              }
+            },
+            series: [
+              {
+                name: '价格',
+                type: 'line',
+                data: prices,
+                smooth: true,
+                lineStyle: {
+                  color: '#5470C6'
+                },
+                itemStyle: {
+                  color: '#5470C6'
+                },
+                areaStyle: {
+                  opacity: 0.2
+                }
+              }
+            ]
+          };
+          echarts.init(this.$refs.box).setOption(option);
+        } else {
+          ElMessage.error(response.data.err);
+        }
+      })
+      .catch(error => {
+        console.error(error);
+        this.$message.error("出错了，请稍后重试");
+      });
       axios.post("/goods/isliked",
         {
           username: this.username,
-          goods: item.productLink,
+          goods: item.productTitle,
           authorization: Cookies.get("token")
         })
         .then(response => {
           if (response.data.code === 0) {
             console.log(response.data.payload.isliked);
             this.selectedItem.isliked = response.data.payload.isliked;
-            this.showItemDetail = true;
           } else {
             ElMessage.error(response.data.err);
           }
@@ -184,7 +255,7 @@ export default {
       axios.post("/goods/like", 
         {
           username: this.username,
-          goods: item.productLink,
+          goods: item.productTitle,
           operation: operation,
           authorization: Cookies.get("token")
         })
@@ -368,5 +439,11 @@ export default {
 
 .view-detail:hover {
   text-decoration: underline;
+}
+
+.echart-box{
+  width: 500px;
+  height: 350px;
+  margin: 20px auto;
 }
 </style>

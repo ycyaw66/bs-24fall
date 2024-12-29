@@ -1,6 +1,7 @@
 -- DROP TABLE IF EXISTS `userlike` cascade;
 -- DROP TABLE IF EXISTS `user` cascade;
 -- DROP TABLE IF EXISTS `goods` cascade;
+-- DROP TABLE IF EXISTS `history` cascade;
 
 CREATE TABLE IF NOT EXISTS user (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -19,10 +20,18 @@ CREATE TABLE IF NOT EXISTS goods (
     product_title VARCHAR(255) NOT NULL,
     product_price VARCHAR(50) NOT NULL,
     keyword VARCHAR(255) NOT NULL,
-    platform VARCHAR(50) NOT NULL
+    platform VARCHAR(50) NOT NULL,
+    time_stamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS userlike (
     username VARCHAR(50) NOT NULL,
-    goods_link LONGTEXT NOT NULL
+    goods_title LONGTEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS history (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    product_title LONGTEXT NOT NULL,
+    product_price VARCHAR(50) NOT NULL,
+    time_stamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
