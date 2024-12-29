@@ -5,10 +5,11 @@ import java.io.File;
 import java.io.InputStreamReader;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.type.TypeReference;
-
+import com.zjubs.backend.mapper.GoodsMapper;
 import com.zjubs.backend.model.Goods;
 
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 public class GoodsService {
+    @Autowired GoodsMapper goodsMapper;
 
     public List<Goods> getJdGoods(String keyword) {
         try {
@@ -45,7 +47,7 @@ public class GoodsService {
             
             ObjectMapper objectMapper = new ObjectMapper();
             List<Goods> goodsList = objectMapper.readValue(outputFile, new TypeReference<List<Goods>>(){});
-
+            insertGoodsList(goodsList, "jd", keyword);
             return goodsList;
         } catch (Exception e) {
             e.printStackTrace();
@@ -79,11 +81,23 @@ public class GoodsService {
             
             ObjectMapper objectMapper = new ObjectMapper();
             List<Goods> goodsList = objectMapper.readValue(outputFile, new TypeReference<List<Goods>>(){});
-
+            insertGoodsList(goodsList, "suning", keyword);
             return goodsList;
         } catch (Exception e) {
             e.printStackTrace();
             return null;
+        }
+    }
+
+    public List<Goods> getGoodsFromDB(String platform, String keyword) {
+        return goodsMapper.selectByPlatformAndKeyword(platform, keyword);
+    }
+
+    public void insertGoodsList(List<Goods> goodsList, String platform, String keyword) {
+        for (Goods goods : goodsList) {
+            goods.setPlatform(platform);
+            goods.setKeyword(keyword);
+            goodsMapper.insert(goods);
         }
     }
 }

@@ -19,4 +19,6 @@ public class Goods {
     private String productLink;
     private String productTitle;
     private String productPrice;
+    private String keyword;
+    private String platform;
 }

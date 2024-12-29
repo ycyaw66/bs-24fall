@@ -28,15 +28,16 @@ public class GoodsController {
 
     @PostMapping("/search")
     public RespResult searchGoods(@Validated @RequestBody SearchBody body) {
-        List<Goods> goodsList = null;
         String platform = body.getPlatform();
         String keyword = body.getKeyword();
-        if (platform.equals("jd")) {
-            goodsList = goodsService.getJdGoods(keyword);
-        } else if (platform.equals("suning")) {
-            goodsList = goodsService.getSuningGoods(keyword);
+        List<Goods> goodsList = goodsService.getGoodsFromDB(platform, keyword);
+        if (goodsList.isEmpty()) {
+            if (platform.equals("jd")) {
+                goodsList = goodsService.getJdGoods(keyword);
+            } else if (platform.equals("suning")) {
+                goodsList = goodsService.getSuningGoods(keyword);
+            }
         }
-
         Map<String, Object> data = new HashMap<>();
         data.put("goods", goodsList);
 
