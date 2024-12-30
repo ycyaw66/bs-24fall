@@ -1,26 +1,25 @@
 <template>
   <div class="main" style="overflow-y: hidden;">
-    <el-main class="main-content">
-      <el-card class="login-card" style="margin-top: -100px;">
+    <el-main v-if="!isMobile" class="main-content">
+      <el-card class="login-card">
         <template #header>
           <div class="container">
-            <div style="margin-left:5px" >
-            <span>用户登录</span>
+            <div style="margin-left:5px">
+              <span>用户登录</span>
             </div>
           </div>
         </template>
-        <!-- 登录卡片的body -->
         <el-form :model="loginForm" ref="loginForm" :rules="loginRules" label-width="80px">
-          <el-form-item label="用户名" prop="username" >
+          <el-form-item label="用户名" prop="username">
             <el-input v-model="loginForm.username" placeholder="请输入用户名" style="width: 250px"></el-input>
           </el-form-item>
           <el-form-item label="密码" prop="password" style="margin-top: 20px">
-            <el-input v-model="loginForm.password" placeholder="请输入密码" style="width: 250px" show-password></el-input> 
+            <el-input v-model="loginForm.password" placeholder="请输入密码" style="width: 250px" show-password></el-input>
             <el-link type="warning" style="margin-left: 15px; font-size: 13px" :underline="false" @click="jumpForget">忘记密码？</el-link>
           </el-form-item>
           <el-form-item>
             <el-button type="warning" @click="handleLogin" style=" width: 250px">登录</el-button>
-            <el-divider style="width: 250px"/>
+            <el-divider style="width: 250px" />
           </el-form-item>
           <el-form-item style="margin-top: -40px">
             没有账号？
@@ -29,8 +28,31 @@
         </el-form>
       </el-card>
     </el-main>
+    <el-main v-else class="main-content-mobile">
+      <el-card class="login-card-mobile">
+        <template #header>
+          <img src="../assets/logo.png" alt="Logo" class="mobile-logo" />
+        </template>
+        <el-form :model="loginForm" ref="loginForm" :rules="loginRules" label-width="0">
+          <el-form-item>
+            <el-input v-model="loginForm.username" placeholder="请输入用户名"></el-input>
+          </el-form-item>
+          <el-form-item>
+            <el-input v-model="loginForm.password" placeholder="请输入密码" show-password></el-input>
+          </el-form-item>
+          <el-form-item>
+            <el-button type="warning" @click="handleLogin" style="width: 100%">登录</el-button>
+          </el-form-item>
+          <el-form-item>
+            没有账号？<el-link type="warning" :underline="false" @click="jumpRegister">注册</el-link>
+            <el-link type="warning" :underline="false" @click="jumpForget" style="margin-left: auto; margin-right: 0">忘记密码？</el-link>
+          </el-form-item>
+        </el-form>
+      </el-card>
+    </el-main>
   </div>
 </template>
+
  
 <script>
 import CryptoJS from 'crypto-js';
@@ -52,17 +74,22 @@ export default {
         password: [
           { required: true, message: '请输入密码', trigger: 'change' }
         ]
-      }
+      },
+      isMobile: false,
     };
   },
   mounted() {
-    // 检查是否已经登录
-    // const token = Cookies.get('token');
-    // if (token) {
-    //   this.jumpSearch();
-    // }
+    this.checkIsMobile();
+    window.addEventListener("resize", this.checkIsMobile);
+    console.log(this.isMobile);
+  },
+  beforeUnmount() {
+    window.removeEventListener("resize", this.checkIsMobile);
   },
   methods: {
+    checkIsMobile() {
+      this.isMobile = (window.innerWidth <= 768);
+    },
     jumpRegister() {
       this.$router.push('/user/register');
     },
@@ -99,7 +126,7 @@ export default {
 </script>
 
 <style scoped>
-
+/* PC端样式 */
 .main {
   position: absolute;
   top: 0;
@@ -137,8 +164,27 @@ export default {
   background-repeat: no-repeat;
 }
 
-.title {
+/* 手机端样式 */
+.main-content-mobile {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100vw;
   background-color: #ffffff;
-  height: 60px;
 }
+
+.login-card-mobile {
+  width: 90%;
+  padding: 10px;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.mobile-logo {
+  display: block;
+  margin: 0 auto;
+  width: 100px;
+  height: auto;
+}
+
 </style>

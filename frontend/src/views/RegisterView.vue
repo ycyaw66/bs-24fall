@@ -1,7 +1,7 @@
 <template>
   <div class="main" style="overflow-y: hidden;">
     <el-container>
-      <el-main class="main-content">
+      <el-main v-if="!isMobile" class="main-content">
         <el-card class="register-card" style="margin-top: -50px;">
           <template #header>
             <div class="container">
@@ -34,6 +34,49 @@
               <el-divider style="width: 300px"/>
             </el-form-item>
             <el-form-item style="margin-top: -40px">
+              已有账号？
+              <el-link type="warning" :underline="false" @click="jumpLogin">登录</el-link>
+            </el-form-item>
+          </el-form>
+        </el-card>
+      </el-main>
+      <el-main v-else class="main-content-mobile">
+        <el-card class="register-card-mobile">
+          <img src="../assets/logo.png" alt="Logo" class="logo-mobile" />
+          <el-form :model="registerForm" :rules="registerRules" ref="registerForm" label-width="0">
+            <el-form-item prop="username">
+              <el-input v-model="registerForm.username" placeholder="用户名"></el-input>
+            </el-form-item>
+            <el-form-item prop="password">
+              <el-input v-model="registerForm.password" placeholder="密码" show-password></el-input>
+            </el-form-item>
+            <el-form-item prop="repassword">
+              <el-input v-model="registerForm.repassword" placeholder="重复密码" show-password></el-input>
+            </el-form-item>
+            <el-form-item prop="email">
+              <div class="email-verification-container">
+                <el-input v-model="registerForm.email" placeholder="邮箱" class="email-input"></el-input>
+                <el-button
+                  v-if="isCounting"
+                  type="warning"
+                  class="verification-button"
+                  :disabled="isCounting"
+                >{{countDown}}秒后重试</el-button>
+                <el-button
+                  v-else
+                  type="warning"
+                  class="verification-button"
+                  @click="getVerificationCode"
+                >获取验证码</el-button>
+              </div>
+            </el-form-item>
+            <el-form-item prop="verificationCode">
+              <el-input v-model="registerForm.verificationCode" placeholder="六位数字验证码" class="mobile-input"></el-input>
+            </el-form-item>
+            <el-form-item>
+              <el-button type="warning" class="mobile-button" @click="submitForm">注册</el-button>
+            </el-form-item>
+            <el-form-item>
               已有账号？
               <el-link type="warning" :underline="false" @click="jumpLogin">登录</el-link>
             </el-form-item>
@@ -94,86 +137,98 @@ export default {
           { required: true, message: '请输入验证码', trigger: 'change' },
           { pattern: /^\d{6}$/, message: '请输入有效的验证码', trigger: 'blur' }
         ]
-      }
+      },
+      isMobile: false,
     };
   },
+  mounted() {
+    this.checkIsMobile();
+    window.addEventListener("resize", this.checkIsMobile);
+    console.log(this.isMobile);
+  },
+  beforeUnmount() {
+    window.removeEventListener("resize", this.checkIsMobile);
+  },
   methods: {
-      jumpLogin() {
-        this.$router.push('/user/login');
-      },
-      submitForm() {
-        // 表单校验
-        this.$refs["registerForm"].validate((valid) => {
-          if (!valid) {
-            ElMessage.error("注册失败，请检查注册信息");
-            console.log("校验不通过");
-            return;
-          } else {
-            console.log("校验通过");
-            this.handleRegister();
-          }
-        });
-      },
-      handleRegister() {
-        const encrypted = CryptoJS.SHA256(this.registerForm.password).toString();
-        console.log(this.uuid);
-        axios.post("/user/register",
+    checkIsMobile() {
+      this.isMobile = (window.innerWidth <= 768);
+    },
+    jumpLogin() {
+      this.$router.push('/user/login');
+    },
+    submitForm() {
+      // 表单校验
+      this.$refs["registerForm"].validate((valid) => {
+        if (!valid) {
+          ElMessage.error("注册失败，请检查注册信息");
+          console.log("校验不通过");
+          return;
+        } else {
+          console.log("校验通过");
+          this.handleRegister();
+        }
+      });
+    },
+    handleRegister() {
+      const encrypted = CryptoJS.SHA256(this.registerForm.password).toString();
+      console.log(this.uuid);
+      axios.post("/user/register",
+      {
+        "username": this.registerForm.username,
+        "password": encrypted,
+        "email": this.registerForm.email,
+        "code": this.registerForm.verificationCode,
+        "uuid": this.uuid
+      })
+      .then(response => {
+        console.log(response.data);
+        if (response.data.code === 0) {
+          ElMessage.success("注册成功");
+          this.jumpLogin();
+        } else {
+          ElMessage.error(response.data.err);
+          return;
+        }
+      })
+      .catch(error => {
+        console.log(error);
+      })
+    },
+    getVerificationCode() {
+      if (!this.isEmailValid) {
+        ElMessage.error("请输入有效的邮箱地址");
+        return;
+      }
+      console.log("发送成功");
+      this.countDown = 30;
+      this.isCounting = true;
+      this.doCountdown();
+      axios.post("/user/sendmail",
         {
-          "username": this.registerForm.username,
-          "password": encrypted,
-          "email": this.registerForm.email,
-          "code": this.registerForm.verificationCode,
-          "uuid": this.uuid
+          "mail": this.registerForm.email
         })
         .then(response => {
-          console.log(response.data);
           if (response.data.code === 0) {
-            ElMessage.success("注册成功");
-            this.jumpLogin();
+            this.uuid = response.data.payload.uuid;
           } else {
             ElMessage.error(response.data.err);
-            return;
           }
         })
         .catch(error => {
           console.log(error);
         })
-      },
-      getVerificationCode() {
-        if (!this.isEmailValid) {
-          ElMessage.error("请输入有效的邮箱地址");
-          return;
+    },
+    doCountdown() {
+      this.countDownTimeout = setTimeout(() => {
+        if (this.countDown <= 0) {
+          this.isCounting = false;
+          clearTimeout(this.countDownTimeout);
+        } else {
+          this.countDown--;
+          this.doCountdown();
         }
-        console.log("发送成功");
-        this.countDown = 30;
-        this.isCounting = true;
-        this.doCountdown();
-        axios.post("/user/sendmail",
-          {
-            "mail": this.registerForm.email
-          })
-          .then(response => {
-            if (response.data.code === 0) {
-              this.uuid = response.data.payload.uuid;
-            } else {
-              ElMessage.error(response.data.err);
-            }
-          })
-          .catch(error => {
-            console.log(error);
-          })
-      },
-      doCountdown() {
-        this.countDownTimeout = setTimeout(() => {
-          if (this.countDown <= 0) {
-            this.isCounting = false;
-            clearTimeout(this.countDownTimeout);
-          } else {
-            this.countDown--;
-            this.doCountdown();
-          }
-        },1000)
-      }
+      },1000)
+    }
   },
   computed: {
     isEmailValid() {
@@ -185,7 +240,7 @@ export default {
 </script>
 
 <style scoped>
-
+/* PC端样式 */
 .main {
   position: absolute;
   top: 0;
@@ -226,5 +281,46 @@ export default {
 .title {
   background-color: #ffffff;
   height: 60px;
+}
+
+/* 手机端样式 */
+.main-content-mobile {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100vw;
+  background-color: #ffffff;
+}
+
+.register-card-mobile {
+  width: 90%;
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.logo-mobile {
+  display: block;
+  margin: 0 auto 20px;
+  max-width: 120px;
+}
+
+.mobile-button {
+  width: 100%;
+}
+
+.email-verification-container {
+  display: flex;
+  align-items: center;
+}
+
+.email-input {
+  flex: 1;
+  margin-right: 5px;
+}
+
+.verification-button {
+  flex-shrink: 0;
+  width: 95px;
 }
 </style>

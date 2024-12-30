@@ -1,6 +1,6 @@
 <template>
   <div class="main" style="overflow-y: hidden;">
-    <el-main class="main-content">
+    <el-main v-if="!isMobile" class="main-content">
       <el-card class="forget-card" style="margin-top: -100px;">
         <template #header>
           <div class="container" style="justify-content: space-between;">
@@ -28,6 +28,45 @@
           </el-form-item>
           <el-form-item>
             <el-button type="warning" @click="submitForm" style="width: 300px">重置密码</el-button>
+          </el-form-item>
+        </el-form>
+      </el-card>
+    </el-main>
+    <el-main v-else class="main-content-mobile">
+      <el-card class="forget-card-mobile">
+        <img src="../assets/logo.png" alt="Logo" class="logo-mobile" />
+        <el-form :model="forgetForm" :rules="forgetRules" ref="forgetForm" label-width="0">
+          <el-form-item prop="email">
+            <el-input v-model="forgetForm.email" placeholder="邮箱" class="mobile-input"></el-input>
+            <div class="email-verification-container">
+              <el-button
+                v-if="isCounting"
+                type="warning"
+                class="verification-button"
+                :disabled="isCounting"
+              >{{countDown}}秒后重试</el-button>
+              <el-button
+                v-else
+                type="warning"
+                class="verification-button"
+                @click="getVerificationCode"
+              >获取验证码</el-button>
+            </div>
+          </el-form-item>
+          <el-form-item prop="verificationCode">
+            <el-input v-model="forgetForm.verificationCode" placeholder="六位数字验证码" class="mobile-input"></el-input>
+          </el-form-item>
+          <el-form-item prop="password">
+            <el-input v-model="forgetForm.password" placeholder="6-16位，至少包括字母和数字" class="mobile-input" show-password></el-input>
+          </el-form-item>
+          <el-form-item prop="repassword">
+            <el-input v-model="forgetForm.repassword" placeholder="请再次输入密码" class="mobile-input" show-password></el-input>
+          </el-form-item>
+          <el-form-item>
+            <el-button type="warning" class="mobile-button" @click="submitForm">重置密码</el-button>
+          </el-form-item>
+          <el-form-item>
+            <el-link type="warning" :underline="false" @click="jumpLogin">返回登录</el-link>
           </el-form-item>
         </el-form>
       </el-card>
@@ -80,10 +119,22 @@ export default {
           { required: true, message: '请再次输入密码', trigger: 'change'},
           { validator: checkPassword, message: '两次密码不一致', trigger: 'blur'}
         ]
-      }
+      },
+      isMobile: false,
     };
   },
+  mounted() {
+    this.checkIsMobile();
+    window.addEventListener("resize", this.checkIsMobile);
+    console.log(this.isMobile);
+  },
+  beforeUnmount() {
+    window.removeEventListener("resize", this.checkIsMobile);
+  },
   methods: {
+    checkIsMobile() {
+      this.isMobile = (window.innerWidth <= 768);
+    },
     jumpLogin() {
       this.$router.push('/user/login');
     },
@@ -101,23 +152,23 @@ export default {
     handleForget() {
       const encrypted = CryptoJS.SHA256(this.forgetForm.password).toString();
       axios.post("/user/forget",
-          {
-            "email": this.forgetForm.email,
-            "uuid": this.uuid,
-            "password": encrypted,
-            "code": this.forgetForm.verificationCode
-          })
-          .then(response => {
-            if (response.data.code === 0) {
-              ElMessage.success("重置密码成功");
-              this.jumpLogin();
-            } else {
-              ElMessage.error(response.data.err);
-            }
-          })
-          .catch(error => {
-            console.log(error);
-          })
+        {
+          "email": this.forgetForm.email,
+          "uuid": this.uuid,
+          "password": encrypted,
+          "code": this.forgetForm.verificationCode
+        })
+        .then(response => {
+          if (response.data.code === 0) {
+            ElMessage.success("重置密码成功");
+            this.jumpLogin();
+          } else {
+            ElMessage.error(response.data.err);
+          }
+        })
+        .catch(error => {
+          console.log(error);
+        })
     },
     getVerificationCode() {
       if (!this.isEmailValid) {
@@ -129,19 +180,19 @@ export default {
       this.isCounting = true;
       this.doCountdown();
       axios.post("/user/sendmail",
-          {
-            "mail": this.forgetForm.email
-          })
-          .then(response => {
-            if (response.data.code === 0) {
-              this.uuid = response.data.payload.uuid;
-            } else {
-              ElMessage.error(response.data.err);
-            }
-          })
-          .catch(error => {
-            console.log(error);
-          })
+        {
+          "mail": this.forgetForm.email
+        })
+        .then(response => {
+          if (response.data.code === 0) {
+            this.uuid = response.data.payload.uuid;
+          } else {
+            ElMessage.error(response.data.err);
+          }
+        })
+        .catch(error => {
+          console.log(error);
+        })
     },
     doCountdown() {
       this.countDownTimeout = setTimeout(() => {
@@ -165,7 +216,7 @@ export default {
 </script>
 
 <style scoped>
-
+/* PC端样式 */
 .main {
   position: absolute;
   top: 0;
@@ -208,4 +259,44 @@ export default {
   height: 60px;
 }
 
+/* 手机端样式 */
+.main-content-mobile {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100vw;
+  background-color: #ffffff;
+}
+
+.forget-card-mobile {
+  width: 90%;
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.logo-mobile {
+  display: block;
+  margin: 0 auto 20px;
+  max-width: 120px;
+}
+
+.mobile-button {
+  width: 100%;
+}
+
+.email-verification-container {
+  display: flex;
+  align-items: center;
+}
+
+.mobile-input {
+  flex: 1;
+  margin-right: 5px;
+}
+
+.verification-button {
+  flex-shrink: 0;
+  width: 95px;
+}
 </style>
