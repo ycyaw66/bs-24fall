@@ -2,7 +2,10 @@ package com.zjubs.backend.service;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -46,9 +49,12 @@ public class GoodsService {
     public List<Goods> getJdGoods(String keyword) {
         try {
             log.info("--python script start--");
-            String scriptPath = new ClassPathResource("script/jd.py").getFile().getAbsolutePath();
-            File scriptDir = new File(scriptPath).getParentFile();
-            File outputFile = new File(scriptDir, "jd_search_result.json");
+            InputStream inputStream = new ClassPathResource("script/jd.py").getInputStream();
+            File tempScriptFile = File.createTempFile("jingdong", ".py");
+            tempScriptFile.deleteOnExit();
+            Files.copy(inputStream, tempScriptFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            
+            String scriptPath = tempScriptFile.getAbsolutePath();
             ProcessBuilder processBuilder = new ProcessBuilder("python", scriptPath, keyword);
             processBuilder.redirectErrorStream(true);
             
@@ -62,13 +68,13 @@ public class GoodsService {
 
             int exitCode = process.waitFor();
             if (exitCode == 0) {
-                log.info("Python script executed successfully" + output.toString());
+                log.info("Python script executed successfully");
             } else {
                 log.error("Python script execution failed with exit code " + exitCode);
             }
             
             ObjectMapper objectMapper = new ObjectMapper();
-            List<Goods> goodsList = objectMapper.readValue(outputFile, new TypeReference<List<Goods>>(){});
+            List<Goods> goodsList = objectMapper.readValue(output.toString(), new TypeReference<List<Goods>>() {});
             return insertGoodsList(goodsList, "jd", keyword);
         } catch (Exception e) {
             e.printStackTrace();
@@ -79,9 +85,12 @@ public class GoodsService {
     public List<Goods> getSuningGoods(String keyword) {
         try {
             log.info("--python script start--");
-            String scriptPath = new ClassPathResource("script/suning.py").getFile().getAbsolutePath();
-            File scriptDir = new File(scriptPath).getParentFile();
-            File outputFile = new File(scriptDir, "suning_search_result.json");
+            InputStream inputStream = new ClassPathResource("script/suning.py").getInputStream();
+            File tempScriptFile = File.createTempFile("suning", ".py");
+            tempScriptFile.deleteOnExit();
+            Files.copy(inputStream, tempScriptFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            
+            String scriptPath = tempScriptFile.getAbsolutePath();
             ProcessBuilder processBuilder = new ProcessBuilder("python", scriptPath, keyword);
             processBuilder.redirectErrorStream(true);
             
@@ -95,13 +104,13 @@ public class GoodsService {
 
             int exitCode = process.waitFor();
             if (exitCode == 0) {
-                log.info("Python script executed successfully" + output.toString());
+                log.info("Python script executed successfully");
             } else {
                 log.error("Python script execution failed with exit code " + exitCode);
             }
             
             ObjectMapper objectMapper = new ObjectMapper();
-            List<Goods> goodsList = objectMapper.readValue(outputFile, new TypeReference<List<Goods>>(){});
+            List<Goods> goodsList = objectMapper.readValue(output.toString(), new TypeReference<List<Goods>>() {});
             return insertGoodsList(goodsList, "suning", keyword);
         } catch (Exception e) {
             e.printStackTrace();

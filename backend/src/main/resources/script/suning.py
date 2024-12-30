@@ -49,7 +49,8 @@ if __name__ == '__main__':
 
     chrome_options = Options()
     chrome_options.add_argument("--headless")
-    chrome_options.add_argument("--disable-gpu")
+    chrome_options.add_argument('--no-sandbox')
+    chrome_options.add_argument('--disable-dev-shm-usage')
     driver = webdriver.Chrome(options=chrome_options)
 
     try:
@@ -66,9 +67,7 @@ if __name__ == '__main__':
 
         result_list = get_value_in_html(html)
         script_dir = os.path.dirname(os.path.abspath(__file__))
-        json_file_path = os.path.join(script_dir, "suning_search_result.json")
-        with open(json_file_path, "w", encoding="utf-8") as file:
-            json.dump(result_list, file, ensure_ascii=False, indent=4)
+        print(json.dumps(result_list, ensure_ascii=False, indent=4))
 
     except Exception as e:
         print(f"请求异常: {e}")
