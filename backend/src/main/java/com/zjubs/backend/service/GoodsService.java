@@ -17,6 +17,7 @@ import com.zjubs.backend.mapper.HistoryMapper;
 import com.zjubs.backend.mapper.UserlikeMapper;
 import com.zjubs.backend.model.Goods;
 import com.zjubs.backend.model.History;
+import com.zjubs.backend.model.User;
 import com.zjubs.backend.model.Userlike;
 
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +36,12 @@ public class GoodsService {
 
     @Autowired
     HistoryMapper historyMapper;
+
+    @Autowired
+    UserService userService;
+
+    @Autowired
+    EmailValidService emailValidService;
 
     public List<Goods> getJdGoods(String keyword) {
         try {
@@ -126,11 +133,7 @@ public class GoodsService {
             if (oldGoods == null) {
                 newGoodsList.add(goods);
                 goodsMapper.insert(goods);
-                History history = new History();
-                history.setProductTitle(goods.getProductTitle());
-                history.setProductPrice(goods.getProductPrice());
-                history.setTimeStamp(timestamp);
-                historyMapper.insert(history);
+                insertHistory(goods);
             }
         }
         return newGoodsList;
@@ -161,5 +164,44 @@ public class GoodsService {
 
     public List<History> getHistory(String productTitle) {
         return historyMapper.getHistoryByTitle(productTitle);
+    }
+
+    public void insertHistory(Goods goods) {
+        // 价格有变动时才插入历史记录
+        History oldHistory = historyMapper.getLatestHistoryByTitle(goods.getProductTitle());
+        if (oldHistory == null || !oldHistory.getProductPrice().equals(goods.getProductPrice())) {
+            History history = new History();
+            history.setProductTitle(goods.getProductTitle());
+            history.setProductPrice(goods.getProductPrice());
+            history.setTimeStamp(goods.getTimeStamp());
+            // 如果价格降低，则提醒用户，价格字符串格式为 "￥123.45"
+            if (oldHistory != null) {
+                try {
+                    double oldPrice = Double.parseDouble(oldHistory.getProductPrice().substring(1));
+                    double newPrice = Double.parseDouble(goods.getProductPrice().substring(1));
+                    if (newPrice < oldPrice) {
+                        remindUser(goods, history);
+                    }
+                } catch (NumberFormatException e) {
+                    log.error("Price format error: " + goods.getProductPrice());
+                }
+            }
+            historyMapper.insert(history);
+        }
+    }
+
+    public void remindUser(Goods goods, History history) {
+        // 如果用户收藏了该商品，且价格降低，则发送邮件提醒
+        List<Userlike> userlikeList = userlikeMapper.selectUserlikeByGoodsTitle(goods.getProductTitle());
+        for (Userlike userlike : userlikeList) {
+            String username = userlike.getUsername();
+            String goodsTitle = userlike.getGoodsTitle();
+            if (goodsTitle.equals(goods.getProductTitle())) {
+                User user = userService.getUserByUsername(username);
+                String email = user.getEmail();
+                String content = "您收藏的商品 \"" + goods.getProductTitle() + "\" 价格降低啦，当前价格为 " + history.getProductPrice() + "，快去看看吧！";
+                emailValidService.sendMailWithContent(email, content);
+            }
+        }
     }
 }

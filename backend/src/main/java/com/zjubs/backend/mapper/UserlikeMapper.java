@@ -19,4 +19,7 @@ public interface UserlikeMapper extends BaseMapper<Userlike> {
 
     @Select("SELECT * FROM userlike WHERE username = #{username}")
     List<Userlike> selectUserlikeByUsername(String username);
+
+    @Select("SELECT * FROM userlike WHERE goods_title = #{goodsTitle}")
+    List<Userlike> selectUserlikeByGoodsTitle(String goodsTitle);
 }

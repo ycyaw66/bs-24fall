@@ -90,6 +90,28 @@ public class EmailValidService {
         }
     }
 
+    public ApiResult sendMailWithContent(String email, String content) {
+        try {
+            Session session = createSession();
+            MimeMessage message = new MimeMessage(session);
+            message.setFrom(new InternetAddress(mailConfig.getMailAddress()));
+            message.setSubject("bs-24fall");
+            message.setText(content);
+
+            log.info(email);
+
+            message.setRecipient(Message.RecipientType.TO, new InternetAddress(email));
+            Transport transport = session.getTransport("smtp");
+            transport.connect("smtp.163.com", mailConfig.getMailAddress(), mailConfig.getPassword());
+            transport.sendMessage(message, message.getAllRecipients());
+            transport.close();
+            return new ApiResult(true, "success");
+        }
+        catch(Exception e) {
+            return new ApiResult(false, e.getMessage());
+        }
+    }
+
     public ApiResult validCode(String uuid, String email, String code) {
         System.out.println("### " + uuid.hashCode());
         String validInfo = (new EmailInfo(email, code)).toString();

@@ -12,4 +12,7 @@ import org.apache.ibatis.annotations.Select;
 public interface HistoryMapper extends BaseMapper<History> {
     @Select("SELECT * FROM history WHERE product_title = #{title} ORDER BY time_stamp ASC")
     List<History> getHistoryByTitle(String title);
+
+    @Select("SELECT * FROM history WHERE product_title = #{title} ORDER BY time_stamp DESC LIMIT 1")
+    History getLatestHistoryByTitle(String title);
 }
