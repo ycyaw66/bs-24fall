@@ -124,7 +124,7 @@ public class GoodsService {
         for (Goods goods : goodsList) {
             Timestamp timestamp = goods.getTimeStamp();
             Timestamp now = Timestamp.valueOf(LocalDateTime.now());
-            if (now.getTime() - timestamp.getTime() > 6000) {
+            if (now.getTime() - timestamp.getTime() > 600000) {
                 goodsMapper.deleteGoodsByTitle(goods.getProductTitle());
             }
         }

@@ -27,7 +27,7 @@ ENV PATH="/usr/local/bin:${PATH}"
 WORKDIR /app
 
 # 将后端项目的 JAR 包复制到容器中
-COPY target/backend-0.0.1-SNAPSHOT.jar /app/backend.jar
+COPY ./backend-0.0.1-SNAPSHOT.jar /app/backend.jar
 
 # 安装 Python 环境中的依赖
 RUN pip install selenium bs4
