@@ -46,7 +46,7 @@ def get_value_in_html(text):
  
 if __name__ == '__main__':
     keyword = sys.argv[1]
-
+    sys.stdout = open(sys.stdout.fileno(), mode='w', encoding='utf-8')
     chrome_options = Options()
     chrome_options.add_argument("--headless")
     chrome_options.add_argument('--no-sandbox')
