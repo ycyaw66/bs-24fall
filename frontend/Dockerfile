@@ -25,6 +25,9 @@ RUN rm -rf /usr/share/nginx/html/*
 # 复制构建好的文件到 Nginx 默认的网页目录
 COPY --from=build /app/dist /usr/share/nginx/html
 
+# 自定义 Nginx 配置，解决刷新或直接访问 URL 时 404 的问题
+COPY ./nginx.conf /etc/nginx/conf.d/default.conf
+
 # 暴露端口 80
 EXPOSE 80
 
