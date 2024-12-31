@@ -16,7 +16,11 @@
         @keyup.enter="handleSearch"
       >
         <template #prepend>
-          <el-select v-model="platform" placeholder="选择平台" style="width: 100px">
+          <el-select v-if="!isMobile" v-model="platform" placeholder="选择平台" style="width: 100px">
+            <el-option label="京东" value="jd" />
+            <el-option label="苏宁易购" value="suning" />
+          </el-select>
+          <el-select v-else v-model="platform" placeholder="选择平台" style="width: 90px">
             <el-option label="京东" value="jd" />
             <el-option label="苏宁易购" value="suning" />
           </el-select>
@@ -32,11 +36,11 @@
       <div class="loading-text">搜索中...</div>
     </div>
 
-    <div v-if="itemList.length > 0" class="item-list">
+    <div v-if="itemList.length > 0" :class="['item-list', isMobile ? 'item-list-mobile' : '']">
       <el-row :gutter="20">
-        <el-col :span="6" v-for="(item, index) in itemList" :key="index">
-          <el-card shadow="hover" class="item-card">
-            <img :src="item.picImg" alt="商品图片" class="item-image" />
+        <el-col :span="isMobile ? 24 : 6" v-for="(item, index) in itemList" :key="index">
+          <el-card shadow="hover" :class="['item-card', isMobile ? 'item-card-mobile' : '']">
+            <img :src="item.picImg" alt="商品图片" :class="['item-image', isMobile ? 'item-image-mobile' : '']" />
             <div class="item-info">
               <h3>{{ item.productTitle }}</h3>
               <p class="price">
@@ -59,11 +63,7 @@
     </div>
 
     <!-- 商品详情弹窗 -->
-    <el-dialog
-      v-model="showItemDetail"
-      title="商品详情"
-      width="50%"
-    >
+    <el-dialog v-if="!isMobile" v-model="showItemDetail" title="商品详情" width="50%">
       <div class="item-detail">
         <img :src="selectedItem.picImg" alt="商品图片" class="item-detail-image" />
         <div class="item-detail-info">
@@ -78,6 +78,23 @@
       </div>
       <div>
         <div class="echart-box" ref="box"></div>
+      </div>
+    </el-dialog>
+    <el-dialog v-else v-model="showItemDetail" title="商品详情" width="90%">
+      <div :class="item-detail-mobile">
+        <img :src="selectedItem.picImg" alt="商品图片" :class="item-detail-image-mobile" />
+        <div :class="item-detail-info-mobile">
+          <h3>{{ selectedItem.productTitle }}</h3>
+          <p :class="item-detail-price-mobile">
+            <span class="price-symbol">¥</span>
+            <span class="price-integer">{{ formatPrice(selectedItem.productPrice).integer }}.</span>
+            <span class="price-decimal">{{ formatPrice(selectedItem.productPrice).decimal }}</span>
+          </p>
+        </div>
+        <el-button :type="selectedItem.isliked === '0' ? 'primary' : 'danger'" @click="toggleLike(selectedItem)" style="width: 80px">{{ selectedItem.isliked === "0" ? "收藏" : "取消收藏" }}</el-button>
+      </div>
+      <div>
+        <div class="echart-box-mobile" ref="box"></div>
       </div>
     </el-dialog>
   </div>
@@ -113,12 +130,22 @@ export default {
         isliked: "0", // isliked: 0 表示未收藏，1 表示收藏
         history: []
       },
+      isMobile: false,
     };
   },
   mounted() {
     this.checkLoginStatus();
+    this.checkIsMobile();
+    window.addEventListener("resize", this.checkIsMobile);
+    console.log(this.isMobile);
+  },
+  beforeUnmount() {
+    window.removeEventListener("resize", this.checkIsMobile);
   },
   methods: {
+    checkIsMobile() {
+      this.isMobile = (window.innerWidth <= 768);
+    },
     formatPrice(price) {
       if (!price) {
         return {
@@ -516,5 +543,53 @@ export default {
   width: 500px;
   height: 350px;
   margin: 20px auto;
+}
+
+/* 手机端样式 */
+.item-list-mobile {
+  width: 100%;
+  align-items: center;
+}
+
+.item-card-mobile {
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 90%;
+  margin-bottom: 10px;
+}
+
+.item-image-mobile {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.item-detail-mobile {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.item-detail-image-mobile {
+  width: 100%;
+  max-height: 300px;
+}
+
+.item-detail-info-mobile {
+  margin-left: 0;
+  width: 100%;
+}
+
+.item-detail-price-mobile {
+  font-size: 16px;
+}
+
+.echart-box-mobile {
+  width: 100%;
+  height: 200px;
+  margin: 10px auto;
 }
 </style>

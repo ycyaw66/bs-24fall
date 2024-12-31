@@ -9,14 +9,14 @@
 
     <h2 class="page-title">我的收藏</h2>
 
-    <div v-if="itemList.length > 0" class="item-list">
+    <div v-if="itemList.length > 0" :class="['item-list', isMobile ? 'item-list-mobile' : '']">
       <el-row :gutter="20">
-        <el-col :span="6" v-for="(item, index) in itemList" :key="index">
-          <el-card shadow="hover" class="item-card">
-            <img :src="item.picImg" alt="商品图片" class="item-image" />
-            <div class="item-info">
+        <el-col :span="isMobile ? 24 : 6" v-for="(item, index) in itemList" :key="index">
+          <el-card shadow="hover" :class="['item-card', isMobile ? 'item-card-mobile' : '']">
+            <img :src="item.picImg" alt="商品图片" :class="['item-image', isMobile ? 'item-image-mobile' : '']" />
+            <div :class="['item-info', isMobile ? 'item-detail-info-mobile' : '']">
               <h3>{{ item.productTitle }}</h3>
-              <p class="price">
+              <p :class="['price', isMobile ? 'item-detail-price-mobile' : '']">
                 <span class="price-symbol">¥</span>
                 <span class="price-integer">{{ formatPrice(item.productPrice).integer }}.</span>
                 <span class="price-decimal">{{ formatPrice(item.productPrice).decimal }}</span>
@@ -31,22 +31,18 @@
       </el-row>
     </div>
 
+
     <!-- 没有收藏商品时的提示 -->
     <div v-if="itemList.length === 0 && hasFetched" class="no-results-message">
       <p>暂无收藏的商品</p>
     </div>
 
-    <el-dialog
-      v-model="showItemDetail"
-      title="商品详情"
-      width="50%"
-      :before-close="checkCollections"
-    >
-      <div class="item-detail">
-        <img :src="selectedItem.picImg" alt="商品图片" class="item-detail-image" />
-        <div class="item-detail-info">
+    <el-dialog v-model="showItemDetail" title="商品详情" :width="isMobile ? '90%' : '50%'" :class="{'dialog-mobile': isMobile}">
+      <div :class="['item-detail', isMobile ? 'item-detail-mobile' : '']">
+        <img :src="selectedItem.picImg" alt="商品图片" :class="['item-detail-image', isMobile ? 'item-detail-image-mobile' : '']" />
+        <div :class="['item-detail-info', isMobile ? 'item-detail-info-mobile' : '']">
           <h3>{{ selectedItem.productTitle }}</h3>
-          <p class="item-detail-price">
+          <p :class="['item-detail-price', isMobile ? 'item-detail-price-mobile' : '']">
             <span class="price-symbol">¥</span>
             <span class="price-integer">{{ formatPrice(selectedItem.productPrice).integer }}.</span>
             <span class="price-decimal">{{ formatPrice(selectedItem.productPrice).decimal }}</span>
@@ -55,9 +51,10 @@
         <el-button :type="selectedItem.isliked === '0' ? 'primary' : 'danger'" @click="toggleLike(selectedItem)" style="width: 80px">{{ selectedItem.isliked === "0" ? "收藏" : "取消收藏" }}</el-button>
       </div>
       <div>
-        <div class="echart-box" ref="box"></div>
+        <div :class="['echart-box', isMobile ? 'echart-box-mobile' : '']" ref="box"></div>
       </div>
     </el-dialog>
+
   </div>
 </template>
 
@@ -87,13 +84,23 @@ export default {
         isliked: "0",
         history: []
       },
+      isMobile: false,
     };
   },
   mounted() {
     this.checkLoginStatus();
     this.fetchCollections();
+    this.checkIsMobile();
+    window.addEventListener("resize", this.checkIsMobile);
+    console.log(this.isMobile);
+  },
+  beforeUnmount() {
+    window.removeEventListener("resize", this.checkIsMobile);
   },
   methods: {
+    checkIsMobile() {
+      this.isMobile = (window.innerWidth <= 768);
+    },
     formatPrice(price) {
       if (!price) {
         return {
@@ -445,5 +452,55 @@ export default {
   width: 500px;
   height: 350px;
   margin: 20px auto;
+}
+
+.item-list-mobile {
+  width: 100%;
+}
+
+.item-card-mobile {
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 90%;
+  margin-bottom: 10px;
+}
+
+.item-image-mobile {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.item-detail-mobile {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.item-detail-image-mobile {
+  width: 100%;
+  max-height: 300px;
+}
+
+.item-detail-info-mobile {
+  margin-left: 0;
+  width: 100%;
+}
+
+.item-detail-price-mobile {
+  font-size: 16px;
+}
+
+.echart-box-mobile {
+  width: 100%;
+  height: 200px;
+  margin: 10px auto;
+}
+
+.dialog-mobile {
+  max-width: 90%;
 }
 </style>

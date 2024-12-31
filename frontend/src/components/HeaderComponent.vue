@@ -3,7 +3,7 @@
     <div style="margin-top: 12px; display: inline-block;">
       <img src="../assets/logo.png" style="margin-right: 20px; height: 40px; vertical-align: middle;" />
       <span style="font-size: large; font-family: 'Microsoft YaHei'; color: black; font-weight: bold;">比价猫</span>
-      <span style="margin-left: 40px; color:rgba(0, 0, 0, 0.2)">浙江大学B/S体系软件设计课程作业</span>
+      <span v-if="!isMobile" style="margin-left: 40px; color:rgba(0, 0, 0, 0.2)">浙江大学B/S体系软件设计课程作业</span>
     </div>
     <div style="float: right; margin-top: 18px; margin-right: 20px; font-size: 16px; display: inline-block;">
       <template v-if="isLoggedIn">
@@ -38,12 +38,22 @@ export default {
     return {
       isLoggedIn: false,
       username: "",
+      isMobile: false,
     };
   },
   mounted() {
     this.checkLoginStatus();
+    this.checkIsMobile();
+    window.addEventListener("resize", this.checkIsMobile);
+    console.log(this.isMobile);
+  },
+  beforeUnmount() {
+    window.removeEventListener("resize", this.checkIsMobile);
   },
   methods: {
+    checkIsMobile() {
+      this.isMobile = (window.innerWidth <= 768);
+    },
     jumpLogin() {
       this.$router.push("/user/login");
     },

@@ -6,12 +6,12 @@
       @logout="handleLogout"
     />
     <el-button type="primary" @click="jumpSearch" class="search-button">返回搜索</el-button>
-    <el-card class="profile-card">
+    <el-card :class="isMobile ? 'profile-card-mobile' : 'profile-card'">
       <!-- 用户头像和用户名 -->
-      <div class="header">
-        <img src="../assets/avatar.png" alt="用户头像" class="avatar" />
-        <div class="user-info">
-          <h2>{{ this.username }}</h2>
+      <div :class="isMobile ? 'header-mobile' : 'header'">
+        <img src="../assets/avatar.png" alt="用户头像" :class="isMobile ? 'avatar-mobile' : 'avatar'" />
+        <div :class="isMobile ? 'user-info-mobile' : 'user-info'">
+          <h2>{{ username }}</h2>
           <p class="email">{{ userInfo.email }}</p>
         </div>
       </div>
@@ -23,55 +23,125 @@
         <p>地址：{{ userInfo.address }}</p>
       </div>
       <!-- 操作按钮 -->
-      <div class="footer-buttons">
-        <el-button type="primary" @click="openCompleteDialog">完善信息</el-button>
-        <el-button type="default" @click="openPasswordDialog">修改密码</el-button>
+      <div :class="footer-buttons">
+        <el-button type="primary" @click="openCompleteDialog" class="action-button">完善信息</el-button>
+        <el-button type="default" @click="openPasswordDialog" class="action-button">修改密码</el-button>
       </div>
     </el-card>
 
     <!-- 完善信息弹窗 -->
-    <el-dialog title="完善信息" v-model="showCompleteDialog" width="30%" align-center>
-      <el-form :model="modifyForm" ref="modifyForm" label-width="80px">
-        <el-form-item label="电话" prop="phone_number" style="margin-top: 20px">
-          <el-input v-model="modifyForm.phone" placeholder="电话" style="width: 300px"></el-input>
+    <el-dialog
+      title="完善信息"
+      v-model="showCompleteDialog"
+      :width="isMobile ? '90%' : '30%'"
+      :align-center="!isMobile"
+    >
+      <el-form
+        :model="modifyForm"
+        ref="modifyForm"
+        :label-width="isMobile ? 'auto' : '80px'"
+        class="complete-form"
+      >
+        <el-form-item
+          label="电话"
+          prop="phone_number"
+          :style="isMobile ? '' : 'margin-top: 20px'"
+        >
+          <el-input
+            v-model="modifyForm.phone"
+            placeholder="电话"
+            :style="isMobile ? 'width: 100%' : 'width: 300px'"
+          ></el-input>
         </el-form-item>
-        <el-form-item label="性别" prop="gender" style="margin-top: 20px">
+        <el-form-item
+          label="性别"
+          prop="gender"
+          :style="isMobile ? '' : 'margin-top: 20px'"
+        >
           <el-radio-group v-model="modifyForm.gender">
             <el-radio label="男">男</el-radio>
             <el-radio label="女">女</el-radio>
             <el-radio label="不愿透露">不愿透露</el-radio>
           </el-radio-group>
         </el-form-item>
-        <el-form-item label="地址" prop="address" style="margin-top: 20px">
-          <el-input v-model="modifyForm.address" placeholder="地址" style="width: 300px"></el-input>
+        <el-form-item
+          label="地址"
+          prop="address"
+          :style="isMobile ? '' : 'margin-top: 20px'"
+        >
+          <el-input
+            v-model="modifyForm.address"
+            placeholder="地址"
+            :style="isMobile ? 'width: 100%' : 'width: 300px'"
+          ></el-input>
         </el-form-item>
       </el-form>
       <template #footer>
-        <span>
+        <div v-if="!isMobile" :class="dialog-footer">
           <el-button @click="showCompleteDialog = false">取消</el-button>
           <el-button type="primary" @click="submitForm">确定</el-button>
-        </span>
+        </div>
+        <div v-else :class="dialog-footer-mobile">
+          <el-button type="primary" @click="submitForm">确定</el-button>
+        </div>
       </template>
     </el-dialog>
 
     <!-- 修改密码弹窗 -->
-    <el-dialog title="修改密码" v-model="showPasswordDialog" width="30%" align-center>
-      <el-form :model="passwordForm" :rules="passwordRules" ref="passwordForm"  label-width="80px">
+    <el-dialog
+      title="修改密码"
+      v-model="showPasswordDialog"
+      :width="isMobile ? '90%' : '30%'"
+      :align-center="!isMobile"
+    >
+      <el-form
+        :model="passwordForm"
+        :rules="passwordRules"
+        ref="passwordForm"
+        :label-width="isMobile ? 'auto' : '80px'"
+        class="password-form"
+      >
         <el-form-item label="旧密码" prop="password">
-          <el-input v-model="passwordForm.password" placeholder="请输入密码" style="width: 300px" show-password></el-input>
+          <el-input
+            v-model="passwordForm.password"
+            placeholder="请输入密码"
+            :style="isMobile ? 'width: 100%' : 'width: 300px'"
+            show-password
+          ></el-input>
         </el-form-item>
-        <el-form-item label="新密码" prop="new_password" style="margin-top: 20px">
-          <el-input v-model="passwordForm.new_password" placeholder="6-16位，至少包括字母和数字" style="width: 300px" show-password></el-input>
+        <el-form-item
+          label="新密码"
+          prop="new_password"
+          :style="isMobile ? '' : 'margin-top: 20px'"
+        >
+          <el-input
+            v-model="passwordForm.new_password"
+            placeholder="6-16位，至少包括字母和数字"
+            :style="isMobile ? 'width: 100%' : 'width: 300px'"
+            show-password
+          ></el-input>
         </el-form-item>
-        <el-form-item label="重复密码" prop="repassword" style="margin-top: 20px">
-          <el-input v-model="passwordForm.repassword" placeholder="请再次输入密码" style="width: 300px" show-password></el-input>
+        <el-form-item
+          label="重复密码"
+          prop="repassword"
+          :style="isMobile ? '' : 'margin-top: 20px'"
+        >
+          <el-input
+            v-model="passwordForm.repassword"
+            placeholder="请再次输入密码"
+            :style="isMobile ? 'width: 100%' : 'width: 300px'"
+            show-password
+          ></el-input>
         </el-form-item>
       </el-form>
       <template #footer>
-        <span>
+        <div v-if="!isMobile" :class="dialog-footer">
           <el-button @click="showPasswordDialog = false">取消</el-button>
           <el-button type="primary" @click="submitForm">确定</el-button>
-        </span>
+        </div>
+        <div v-else :class="dialog-footer-mobile">
+          <el-button type="primary" @click="submitForm">确定</el-button>
+        </div>
       </template>
     </el-dialog>
   </div>
@@ -128,13 +198,23 @@ export default {
           { required: true, message: '请再次输入密码', trigger: 'blur'},
           { validator: checkPassword, message: '两次密码不一致', trigger: 'blur'}
         ]
-      }
+      },
+      isMobile: false,
     };
   },
   mounted() {
     this.getUserInfo();
+    this.checkIsMobile();
+    window.addEventListener("resize", this.checkIsMobile);
+    console.log(this.isMobile);
+  },
+  beforeUnmount() {
+    window.removeEventListener("resize", this.checkIsMobile);
   },
   methods: {
+    checkIsMobile() {
+      this.isMobile = (window.innerWidth <= 768);
+    },
     jumpLogin() {
       this.$router.push("/user/login"); // 跳转到登录页
     },
@@ -336,4 +416,69 @@ export default {
   margin-left: auto;
   margin-right: 50px;
 }
+
+/* 手机端样式 */
+.profile-card-mobile {
+  margin-top: 5%;
+  width: 80%;
+  padding: 10px;
+  text-align: center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.header-mobile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.footer-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  align-items: center;
+}
+
+.dialog-footer-mobile {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px 0;
+}
+
+.avatar-mobile {
+  width: 40%;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 5px 0;
+}
+
+.user-info-mobile {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* 用户信息居中 */
+  text-align: center;  /* 确保文本居中 */
+  margin-top: 10px; /* 增加间距 */
+}
+
+.user-info-mobile h2 {
+  font-size: 18px;
+  font-weight: bold;
+  margin: 5px 0;
+}
+
+.user-info-mobile .email {
+  font-size: 14px;
+  color: gray;
+  margin: 5px 0;
+}
+
+.action-button {
+  width: 30%; /* 设置按钮宽度一致 */
+}
+
 </style>
