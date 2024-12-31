@@ -1,0 +1,110 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath}
+\usepackage{array}
+\usepackage{graphicx}
+\usepackage{indentfirst}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{fontspec}
+\usepackage{multirow}
+\usepackage{ctex}
+\usepackage{ulem}
+\usepackage{float}
+\usepackage{tabularx}
+\usepackage{geometry}
+\usepackage{longtable}
+\usepackage{setspace}
+\usepackage{amssymb}
+% \geometry{
+%     left=3cm,
+%     right=3cm,
+%     top=3cm,
+%     bottom=3cm,
+%     % 如果需要设置页眉页脚的高度，可以添加以下参数
+%     % headheight=2cm,
+%     % headsep=1cm,
+%     % footskip=1cm,
+% }
+\renewcommand{\arraystretch}{1.3} %控制行高
+
+\begin{document}
+
+\begin{titlepage}
+    \centering
+    
+    \includegraphics[width=0.6\textwidth]{./picture/logo.jpg}\\[1.5cm]
+    
+    % 标题
+    {\LARGE \textbf{B/S体系软件设计-开发体会与小结}}\\[4cm]
+
+    \begin{large}
+        \makebox[4em][s]{课程名称}:\underline{\makebox[15em][c]{B/S体系软件设计}}\\[0.5cm]
+        \makebox[4em][s]{姓名}:\underline{\makebox[15em][c]{李谞远}}\\[0.5cm]
+        \makebox[4em][s]{学院}:\underline{\makebox[15em][c]{计算机科学与技术学院}}\\[0.5cm]
+        \makebox[4em][s]{院系}:\underline{\makebox[15em][c]{计算机系}}\\[0.5cm]
+        \makebox[4em][s]{专业}:\underline{\makebox[15em][c]{软件工程}}\\[0.5cm]
+        \makebox[4em][s]{学号}:\underline{\makebox[15em][c]{3220102970}}\\[0.5cm]
+        \makebox[4em][s]{指导教师}:\underline{\makebox[15em][c]{胡晓军}}\\[1cm]
+    \end{large}
+
+    {\Large \textbf{\today}}
+
+\end{titlepage}
+
+\newpage
+\begin{center}
+  \zihao{3} \bf 浙江大学实验报告
+  \end{center}
+  \vspace{1cm}
+  \zihao{-4}
+  \noindent 课程名称: \underline{\makebox[5cm]{B/S体系软件设计}} 
+  \\[0.4cm] 
+  实验项目名称: \underline{\makebox[11.3cm]{商品价格比较网站}} \\[0.4cm] 
+  学生姓名: \underline{\makebox[2cm]{李谞远}} 
+  专业: \underline{\makebox[4.6cm]{软件工程}} 
+  学号: \underline{\makebox[3cm]{3220102970}} \\[0.4cm]
+  同组学生姓名: \underline{\makebox[4.2cm]{无}} 
+  指导老师: \underline{\makebox[5cm]{胡晓军}} \\[0.4cm]
+  实验地点: \underline{\makebox[5cm]{无}}
+  实验日期: \underline{\makebox[2cm]{2024}} 年 \underline{\makebox[2cm]{12}} 月
+\newpage  
+\tableofcontents
+\newpage
+
+\section{前后端的实现}
+
+\subsection{前端}
+本次项目中，我前端的实现基于 HTML、CSS 和 JavaScript，分别负责网页的结构、样式和交互功能。HTML 用于构建页面的基本结构，CSS 负责布局设计和视觉效果优化，JavaScript 用于实现动态交互功能。为了提高开发效率和代码的可维护性，项目中引入了 Vue.js 框架。Vue.js 的组件化开发模式使得页面功能被拆分为独立的模块，实现了代码的高复用性，还使得功能模块更加直观且易于维护。  
+
+Vue.js 提供了数据绑定和响应式更新机制。数据绑定机制使得用户输入和页面显示能够实时同步，避免了繁琐的 DOM 操作。响应式更新机制则确保了数据变化时界面的动态刷新，为用户带来了流畅的交互体验。此外，项目采用了 Element-UI 作为 UI 组件库，为页面提供了一致的视觉风格和高质量的交互体验。借助其丰富的组件，开发过程中得以快速构建复杂界面，例如表单、对话框等等，大大减少了开发时间。
+
+\subsection{后端}
+后端采用 Java 语言开发，基于 Spring Boot 框架构建服务端。在用户认证方面，我通过 UUID 来生成随机的 Token，用户的所有请求都附带有 Token，以应对各种可能的非法访问请求。用户注册、登录，一切和密码相关的活动都使用 SHA256 算法加密存储，然后再发往后端，避免了明文密码可能带来的安全风险。在数据的管理中，后端通过 MySQL 数据库存储用户信息、商品的基本信息和价格历史记录，并在 Mapper 部分设计了高效的查询接口，支持对数据库信息各种条件的查询。
+
+在前后端交互方面，我使用了 Axios 库来实现前后端的数据交互，并采用 Restful API 格式设计接口，用 Apifox 来设计和管理接口。这些格式化的接口管理，非常方便我在前端和后端之间的数据传输，也使得前后端的开发更加独立，降低了模块之间的耦合度。
+
+项目中特别集成了 Python 爬虫模块，用于从多个电商平台抓取商品价格数据。后端通过 Java 的工具库来调用 Python 脚本，从而获取爬取结果，并将数据整理后存储到数据库中。
+
+\section{遇到的问题与解决方案}
+
+\subsection{Docker}
+使用 Docker 打包项目耗费了我较多的时间，因为我之前没有接触过 Docker，对 Docker 的使用和配置不够熟悉，同时项目存在很多依赖，比如数据库、Python 环境、浏览器依赖等等，这些依赖的配置也增加了 Docker 的配置难度。这次项目我也是对 Docker 的教程进行了深入的学习，通过网上的教程和 Docker 官方文档，最终成功将项目打包到 Docker 容器中。
+
+\subsection{Nginx}
+项目打包到容器内后，前后端的通信需要通过 Nginx 来实现，在测试过程中，发现了一些由于 Nginx 配置导致的问题，这些问题在本地运行时并没有发生，比如前端直接访问 URL，或是刷新页面，都会导致 404 错误。最后通过网上搜索相关问题的博客，调整了 Nginx 的配置，解决了该问题。
+
+\subsection{CSS}
+如何设计出一个好看的页面也是前端开发中的一个难点，这部分要感谢 AI 发展的迅速，我通过自己初步进行页面的布局，然后将剩下的具体样式交给 AI 生成，再根据生成的样式进行调整，这样既提高了开发效率，又保证了页面的美观。
+
+\subsection{爬虫}
+由于电商平台的反爬虫机制，我在写 Python 脚本爬取商品信息时遇到了一些困难，比如登录验证、懒加载、验证码识别等等。最后通过搜索相关博客，我使用的是 Selenium 和 Chrome Headless 模式，模拟浏览器访问，提取网页的 HTML 代码，然后使用 Python 的 bs4 库进行 HTML 元素的提取，提取出所有商品图片、链接和价格元素，然后整理成 JSON 格式传给后端 Java 模块进一步处理。当然还是存在一些问题，比如爬取速度较慢，有待进一步优化。
+
+\section{总结和反思}
+这次开发实践不仅实现了商品价格比较网站的基本功能，也让我对 B/S 体系架构有了更深入的理解。在项目中，我们通过 Vue.js 和 Spring Boot 构建了高效、可靠的前后端架构，同时通过多种技术手段保障了数据的安全性和准确性。通过项目的开发，我对前端和后端的开发流程有了更深入的了解，也提升了自己的编程能力。我也认识到前后端解耦的重要性，通过正确的接口设计和接口管理，前后端可以完全独立开发，极大提高了开发效率。
+
+虽然项目总体上取得了预期的效果，但也暴露了一些不足之处。例如，在设计阶段，对数据库的设计讨论不够充分，导致开发中多次重新建表，每一次建表，都会带有大量的相关代码的修改，非常的繁琐。另外，在代码测试上，由于工具运用能力的欠缺，缺乏一些自动化测试工具支持，只能手动对各个功能模块进行一个个的测试，这也会导致部分功能的缺陷未能及时发现。
+
+本次实践不仅提升了我各方面的技术，也提升了我对各种问题的解决能力，为我未来的开发工作积累了宝贵的经验。
+
+
+\end{document}
